@@ -25,6 +25,7 @@ import {
 import { trackCopy } from './analytics/telemetry';
 import { PanelRight, HelpCircle } from 'lucide-react';
 import { NotesSidebar } from './components/sidebar/NotesSidebar';
+import { PwaUpdatePrompt } from './components/pwa/PwaUpdatePrompt';
 import { AppState } from './types';
 
 export const AppContent: React.FC = () => {
@@ -225,6 +226,8 @@ export const AppContent: React.FC = () => {
         onConfirm={confirmImageReplacement}
         onCancel={cancelImageReplacement}
       />
+
+      <PwaUpdatePrompt />
 
       {/* Keyboard Shortcuts Cheat-Sheet Modal */}
       <ShortcutsModal

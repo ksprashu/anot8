@@ -31,9 +31,10 @@
 - [Key Features](#-key-features)
 - [System Architecture](#-system-architecture)
 - [Comprehensive Keyboard Shortcuts](#-comprehensive-keyboard-shortcuts)
+- [Install as an App](#-install-as-an-app)
 - [Getting Started & Local Development](#-getting-started--local-development)
 - [Testing & Quality Assurance](#-testing--quality-assurance)
-- [Containerization & Production Deployment](#-containerization--production-deployment)
+- [Production Deployment](#-production-deployment)
 - [Contributing](#-contributing)
 - [License](#-license)
 
@@ -168,6 +169,22 @@ Annot8 is structured around a **5-Layer Hybrid Architecture** that cleanly separ
 | **Export** | Paste Screenshot | <kbd>⌘</kbd> + <kbd>V</kbd> | <kbd>Ctrl</kbd> + <kbd>V</kbd> | Ingest screenshot directly from clipboard |
 | **General** | Shortcuts Cheat-Sheet | <kbd>?</kbd> | <kbd>?</kbd> | Open interactive keyboard shortcuts modal |
 | **General** | Close Modal | <kbd>Esc</kbd> | <kbd>Esc</kbd> | Dismiss any open modal dialog or overlay |
+
+---
+
+## 💻 Install as an App
+
+Annot8 is a Progressive Web App. Installing it gives it its own window, a taskbar/Dock icon, and offline launch. Everything still runs locally in your browser engine.
+
+| Platform | How to install |
+|---|---|
+| **Chrome / Edge (Windows, macOS, Linux)** | Click the install icon at the right of the address bar, or open the browser menu and choose **Install Annot8**. Then pin it to the taskbar or keep it in the Dock. |
+| **Safari (macOS Sonoma or later)** | **File → Add to Dock**. |
+| **Safari (iOS / iPadOS)** | **Share → Add to Home Screen**. |
+
+When a new version is deployed, the app shows an **Update available** toast. The update only applies when you click **Reload**, so in-progress annotations are never discarded by surprise.
+
+App icons are generated from `public/logo.svg` and `scripts/logo-maskable.svg` with `npm run generate-pwa-assets`.
 
 ---
 

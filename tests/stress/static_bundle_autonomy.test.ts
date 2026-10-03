@@ -26,22 +26,59 @@ describe('Static Bundle & Offline Autonomy', () => {
       expect(jsFiles.length).toBeGreaterThanOrEqual(1);
       expect(cssFiles.length).toBeGreaterThanOrEqual(1);
 
-      // Verify content hash naming convention (index-[hash].js, index-[hash].css)
+      // Every chunk carries a content hash (name-[hash].js); lazy chunks such as workbox-window are allowed
       for (const jsFile of jsFiles) {
-        expect(jsFile).toMatch(/^index-[A-Za-z0-9_-]+\.js$/);
+        expect(jsFile).toMatch(/^[A-Za-z0-9_.-]+-[A-Za-z0-9_-]{8}\.js$/);
       }
       for (const cssFile of cssFiles) {
         expect(cssFile).toMatch(/^index-[A-Za-z0-9_-]+\.css$/);
       }
 
-      // Verify index.html in dist points directly to these hashed assets
+      // index.html points directly at the hashed entry bundle and stylesheet
       const indexHtmlContent = fs.readFileSync(path.join(distDir, 'index.html'), 'utf-8');
-      for (const jsFile of jsFiles) {
-        expect(indexHtmlContent).toContain(jsFile);
-      }
+      const entryJs = jsFiles.filter((f) => f.startsWith('index-'));
+      expect(entryJs).toHaveLength(1);
+      expect(indexHtmlContent).toContain(entryJs[0]);
       for (const cssFile of cssFiles) {
         expect(indexHtmlContent).toContain(cssFile);
       }
+    });
+  });
+
+  describe('Installable PWA', () => {
+    const readDist = (file: string) => fs.readFileSync(path.join(distDir, file), 'utf-8');
+
+    it('ships a web app manifest with standalone display and installable icons', () => {
+      const manifest = JSON.parse(readDist('manifest.webmanifest'));
+
+      expect(manifest.name).toContain('Annot8');
+      expect(manifest.short_name).toBe('Annot8');
+      expect(manifest.display).toBe('standalone');
+      expect(manifest.start_url).toBe('./');
+      expect(manifest.scope).toBe('./');
+
+      const sizes = manifest.icons.map((icon: { sizes: string }) => icon.sizes);
+      expect(sizes).toEqual(expect.arrayContaining(['192x192', '512x512']));
+      expect(manifest.icons.some((icon: { purpose?: string }) => icon.purpose === 'maskable')).toBe(true);
+      for (const icon of manifest.icons) {
+        expect(fs.existsSync(path.join(distDir, icon.src))).toBe(true);
+      }
+    });
+
+    it('links the manifest, apple touch icon, and theme color from index.html', () => {
+      const html = readDist('index.html');
+      expect(html).toContain('rel="manifest"');
+      expect(html).toContain('apple-touch-icon-180x180.png');
+      expect(html).toContain('name="theme-color"');
+      expect(fs.existsSync(path.join(distDir, 'apple-touch-icon-180x180.png'))).toBe(true);
+    });
+
+    it('generates a service worker that precaches the app shell for offline launch', () => {
+      const sw = readDist('sw.js');
+      expect(sw).toContain('index.html');
+      expect(sw).toMatch(/assets\/index-[A-Za-z0-9_-]+\.js/);
+      // Updates wait for the user: skipWaiting only runs when the page posts SKIP_WAITING
+      expect(sw).toContain('SKIP_WAITING');
     });
   });
 
