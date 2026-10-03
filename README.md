@@ -13,7 +13,7 @@
 [![React](https://img.shields.io/badge/React-18.3-61DAFB?logo=react&logoColor=black&style=flat-square)](https://react.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38B2AC?logo=tailwind-css&logoColor=white&style=flat-square)](https://tailwindcss.com/)
 [![Vitest](https://img.shields.io/badge/Tests-52%2F52%20Suites%20Passing%20(763%20Tests)-brightgreen?logo=vitest&logoColor=white&style=flat-square)](tests/)
-[![Google Cloud Run](https://img.shields.io/badge/Deployment-Cloud%20Run-4285F4?logo=google-cloud&logoColor=white&style=flat-square)](deploy.sh)
+[![GitHub Pages](https://img.shields.io/badge/Deployment-GitHub%20Pages-222222?logo=github&logoColor=white&style=flat-square)](.github/workflows/deploy-pages.yml)
 
 </div>
 
@@ -232,52 +232,18 @@ npm run lint
 
 ---
 
-## 🐳 Containerization & Production Deployment
+## 🚀 Production Deployment
 
-### Docker Multi-Stage Build
+Annot8 is a fully static, client-side app: once loaded, all image processing, annotation, and export runs in the browser with no backend.
 
-A high-performance, hardened multi-stage Docker container serves the production build using `nginx:alpine` with gzip compression, SPA fallback routing, security headers, and rate-limiting bot protection.
+It is deployed to **GitHub Pages** by [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml) on every push to `main`. The workflow typechecks, builds, runs the test suite, and publishes `dist/`. The site is served at the custom domain configured in the repository's Pages settings.
 
-1. **Build the Docker container image**:
-   ```bash
-   docker build -t annot8:latest .
-   ```
-
-2. **Run locally on port 8080**:
-   ```bash
-   docker run -d -p 8080:8080 --name annot8-app annot8:latest
-   ```
-   Access `http://localhost:8080` in your web browser.
-
-### Google Cloud Run Deployment
-
-A dedicated deployment script (`deploy.sh`) automates container compilation and deployment to Google Cloud Run with cost-safety guardrails and DDoS shielding.
-
-Project and region are fully parameterized and can be configured via environment variables, a local `.env.deploy` file, or command-line arguments:
+To preview a production build locally:
 
 ```bash
-# Make script executable
-chmod +x deploy.sh
-
-# Option 1: Pass project ID and optional region as arguments
-./deploy.sh <your-gcp-project-id> [region]
-
-# Option 2: Use environment variables
-GCP_PROJECT_ID=your-gcp-project-id GCP_REGION=us-central1 ./deploy.sh
-
-# Option 3: Configure via .env.deploy file (copied from template)
-cp .env.deploy.example .env.deploy
-# Edit .env.deploy with your project ID
-./deploy.sh
+npm run build
+npm run preview
 ```
-
-**Cloud Run Configuration Guardrails**:
-- **Project**: Parameterized via `GCP_PROJECT_ID` / argument / `.env.deploy` / active `gcloud` config
-- **Region**: Defaults to `us-central1` (configurable via `GCP_REGION` or argument)
-- **Access**: Unauthenticated public HTTPS (`--allow-unauthenticated`)
-- **Concurrency**: `80` requests per instance
-- **Scale-to-Zero Guardrail**: `--min-instances=0` (zero idle costs)
-- **Max Instance Cap**: `--max-instances=5` (prevents runaway costs from bot floods)
 
 ---
 

@@ -36,13 +36,13 @@ describe('Milestone M-Rel-1: Governance, Disclaimers & Documentation Test Suite'
     expect(readmeContent).toContain('React');
     expect(readmeContent).toContain('Tailwind CSS');
     expect(readmeContent).toContain('Vitest');
-    expect(readmeContent).toContain('Cloud Run');
+    expect(readmeContent).toContain('GitHub Pages');
 
     // Verify key sections
     expect(readmeContent).toContain('Comprehensive Keyboard Shortcuts');
     expect(readmeContent).toContain('Getting Started & Local Development');
-    expect(readmeContent).toContain('Containerization & Production Deployment');
-    expect(readmeContent).toContain('deploy.sh');
+    expect(readmeContent).toContain('Production Deployment');
+    expect(readmeContent).toContain('deploy-pages.yml');
   });
 
   it('verifies CONTRIBUTING.md exists with developer guidelines, code standards, and SLA notice', () => {

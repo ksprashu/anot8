@@ -99,7 +99,6 @@ The complete opaque-box test infrastructure and master test suites for **Annot8*
 | `tests/unit/appReducer.test.ts` | App state reducer, undo/redo, 1..N re-indexing invariant tests | Unit |
 | `tests/unit/geometry.test.ts` | Arrowhead math, bounding boxes, coordinate calculations | Unit |
 | `tests/unit/badges.test.ts` | Badge dimensions, anchor math, resolution scaling tests | Unit |
-| `tests/unit/ops_config.test.ts` | Self-hosted ops, Dockerfile, and Nginx reverse proxy tests | Unit |
 | `tests/component/ReplaceImageModal.test.tsx` | Paste replacement dialog component tests | Component |
 | `tests/component/ZoomControls.test.tsx` | Zoom toolbar controls & preset selector component tests | Component |
 | `tests/component/ColorPalette.test.tsx` | Stroke width and fill opacity controls component tests | Component |

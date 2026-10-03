@@ -27,8 +27,6 @@ coverage/
 .env
 .env.local
 .env.*.local
-.env.deploy
-!.env.deploy.example
 
 # Logs
 npm-debug.log*
