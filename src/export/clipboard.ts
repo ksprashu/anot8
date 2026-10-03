@@ -19,6 +19,8 @@ export interface ClipboardResult {
   success: boolean;
   method: ClipboardWriteMethod;
   fallbackUsed: boolean;
+  /** Set when only part of a combined payload reached the clipboard. */
+  partial?: 'image-only';
   error?: Error;
 }
 
@@ -315,7 +317,8 @@ export async function writeCombinedToClipboard(
         return {
           success: true,
           method: 'async-clipboard',
-          fallbackUsed: false,
+          fallbackUsed: true,
+          partial: 'image-only',
         };
       } catch (err) {
         const error = err instanceof Error ? err : new Error(String(err));

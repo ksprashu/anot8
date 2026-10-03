@@ -101,13 +101,17 @@ export const NotesSidebar: React.FC<NotesSidebarProps> = ({
       if (onMoveUpAnnotation) {
         onMoveUpAnnotation(id, currentArrayIdx);
       } else if (appDispatch) {
+        // Visible indices skip highlight/blur effects, so resolve positions in the full list.
         appDispatch({
           type: 'REORDER_ANNOTATIONS',
-          payload: { fromIndex: currentArrayIdx, toIndex: currentArrayIdx - 1 },
+          payload: {
+            fromIndex: allAnnotations.findIndex((a) => a.id === id),
+            toIndex: allAnnotations.findIndex((a) => a.id === annotations[currentArrayIdx - 1].id),
+          },
         });
       }
     },
-    [onMoveUpAnnotation, appDispatch]
+    [allAnnotations, annotations, onMoveUpAnnotation, appDispatch]
   );
 
   const handleMoveDown = useCallback(
@@ -118,11 +122,14 @@ export const NotesSidebar: React.FC<NotesSidebarProps> = ({
       } else if (appDispatch) {
         appDispatch({
           type: 'REORDER_ANNOTATIONS',
-          payload: { fromIndex: currentArrayIdx, toIndex: currentArrayIdx + 1 },
+          payload: {
+            fromIndex: allAnnotations.findIndex((a) => a.id === id),
+            toIndex: allAnnotations.findIndex((a) => a.id === annotations[currentArrayIdx + 1].id),
+          },
         });
       }
     },
-    [annotations.length, onMoveDownAnnotation, appDispatch]
+    [allAnnotations, annotations, onMoveDownAnnotation, appDispatch]
   );
 
   // If sidebar is collapsed, render compact rail with expand button

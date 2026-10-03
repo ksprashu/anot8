@@ -51,6 +51,7 @@ declare global {
 
 // In-memory event log for inspection, testing, and debugging
 const eventLog: TelemetryEventEntry[] = [];
+const MAX_EVENT_LOG_SIZE = 5000;
 let isEnabled = true;
 
 /**
@@ -86,6 +87,9 @@ export function trackEvent(eventName: string, params: Record<string, unknown> = 
     timestamp: Date.now(),
   };
   eventLog.push(entry);
+  if (eventLog.length > MAX_EVENT_LOG_SIZE) {
+    eventLog.splice(0, eventLog.length - MAX_EVENT_LOG_SIZE);
+  }
 
   if (typeof window === 'undefined') return;
 

@@ -26,6 +26,15 @@ export const AnnotationDeleteButton: React.FC<AnnotationDeleteButtonProps> = ({
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    e.stopPropagation();
+    e.preventDefault();
+    if (onDelete && annotationId) {
+      onDelete(annotationId);
+    }
+  };
+
   const handlePointerDown = (e: React.PointerEvent) => {
     e.stopPropagation();
   };
@@ -39,6 +48,7 @@ export const AnnotationDeleteButton: React.FC<AnnotationDeleteButtonProps> = ({
         transformOrigin: `${position.x}px ${position.y}px`,
       }}
       onClick={handleClick}
+      onKeyDown={handleKeyDown}
       onPointerDown={handlePointerDown}
       role="button"
       aria-label="Delete annotation"

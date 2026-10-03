@@ -42,6 +42,8 @@ export const AppContent: React.FC = () => {
     confirmImageReplacement,
     cancelImageReplacement,
     openFilePicker,
+    fileInputRef,
+    handleFileInputChange,
     processImageBlob,
   } = useClipboardPaste({
     requireConfirmationIfAnnotated: true,
@@ -63,7 +65,7 @@ export const AppContent: React.FC = () => {
     } catch (err: any) {
       toast.error('Failed to copy image', err?.message);
     }
-  }, [state.image, state.annotations, toast]);
+  }, [state.image, state.annotations, state.overlays, toast]);
 
   const handleCopyNotes = useCallback(async () => {
     if (state.annotations.length === 0) return;
@@ -95,6 +97,16 @@ export const AppContent: React.FC = () => {
 
   return (
     <div className="flex flex-col h-screen w-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 overflow-hidden font-sans select-none transition-colors duration-200">
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/svg+xml"
+        onChange={handleFileInputChange}
+        className="hidden"
+        data-testid="global-image-file-input"
+        aria-hidden="true"
+      />
+
       {/* Top Application Header / Toolbar */}
       <header
         data-testid="app-header"
