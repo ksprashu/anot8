@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "image": { "source": "../screen.png" },
+  "defaults": { "color": "#FF3366", "strokeWidth": 4 },
+  "annotations": [
+    { "type": "box", "x": "31.25%", "y": "35%", "width": "60%", "height": "8%", "note": "Percent-placed box" },
+    { "type": "box", "x": 250, "y": 246, "width": 480, "height": 40, "color": "#0EA5E9", "fillOpacity": 0.3 },
+    { "type": "text", "at": [490, 120], "text": "New sign-in form\nshipped in v2", "color": "#FACC15" },
+    { "type": "text", "at": ["50%", 448], "text": "Centered caption", "align": "center", "color": "#1E293B", "fontSize": 22 }
+  ]
+}

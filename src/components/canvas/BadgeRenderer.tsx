@@ -1,14 +1,14 @@
 import React, { useMemo } from 'react';
-import { Annotation, Point, PresetColor } from '../../types';
+import { Annotation, AnnotationColor, Point } from '../../types';
 import { getBadgePositionForShape, getBadgeDimensions } from '../../math/badges';
-import { PRESET_COLORS } from '../../constants/colors';
+import { resolveColor } from '../../constants/colors';
 import { useApp } from '../../state/AppContext';
 
 export interface BadgeRendererProps {
   annotation?: Annotation;
   index?: number;
   position?: Point;
-  color?: PresetColor;
+  color?: AnnotationColor;
   isSelected?: boolean;
   isHovered?: boolean;
   isDraft?: boolean;
@@ -47,8 +47,7 @@ export const BadgeRenderer: React.FC<BadgeRendererProps> = ({
   const scaledOffset = Math.round(3 * safeScale);
 
   const index = annotation?.index ?? explicitIndex ?? 1;
-  const colorKey: PresetColor = annotation?.style.color ?? explicitColor ?? 'amber';
-  const colorDef = PRESET_COLORS[colorKey] || PRESET_COLORS.amber;
+  const colorDef = resolveColor(annotation?.style.color ?? explicitColor ?? 'amber');
 
   const isSelected =
     explicitSelected ?? (annotation && appState ? appState.selectedAnnotationId === annotation.id : false);

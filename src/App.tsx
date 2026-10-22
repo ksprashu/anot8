@@ -26,6 +26,7 @@ import { trackCopy } from './analytics/telemetry';
 import { PanelRight, HelpCircle } from 'lucide-react';
 import { NotesSidebar } from './components/sidebar/NotesSidebar';
 import { PwaUpdatePrompt } from './components/pwa/PwaUpdatePrompt';
+import { AgentBridge } from './bridge/AgentBridge';
 import { AppState } from './types';
 
 export const AppContent: React.FC = () => {
@@ -54,7 +55,7 @@ export const AppContent: React.FC = () => {
     if (!state.image) return;
     trackCopy({ type: 'image_clipboard', annotationCount: state.annotations.length });
     try {
-      const blob = await exportCompositeBlob(state.image, state.annotations, state.overlays);
+      const blob = await exportCompositeBlob(state.image, state.annotations, state.overlays, { frame: state.frame });
       const res = await writeImageToClipboard(blob);
       if (res.success && !res.fallbackUsed) {
         toast.success('Copied image to clipboard!', 'Ready to paste into chat, PRs, or docs');
@@ -66,7 +67,7 @@ export const AppContent: React.FC = () => {
     } catch (err: any) {
       toast.error('Failed to copy image', err?.message);
     }
-  }, [state.image, state.annotations, state.overlays, toast]);
+  }, [state.image, state.annotations, state.overlays, state.frame, toast]);
 
   const handleCopyNotes = useCallback(async () => {
     if (state.annotations.length === 0) return;
@@ -228,6 +229,7 @@ export const AppContent: React.FC = () => {
       />
 
       <PwaUpdatePrompt />
+      <AgentBridge />
 
       {/* Keyboard Shortcuts Cheat-Sheet Modal */}
       <ShortcutsModal

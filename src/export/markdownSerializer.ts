@@ -4,8 +4,9 @@
  * Supports Numbered Lists, GFM Tables, Task Checklists, and Full Summary Reports.
  */
 
-import { Annotation, BaseImage, PresetColor } from '../types';
-import { PRESET_COLORS } from '../constants/colors';
+import { Annotation, AnnotationColor, BaseImage } from '../types';
+import { resolveColor } from '../constants/colors';
+import { isAnnotatableGeometry } from '../state/appReducer';
 
 export type MarkdownExportFormat = 'list' | 'table' | 'checklist' | 'report';
 
@@ -35,20 +36,18 @@ export function formatShapeTypeName(type: string): string {
 }
 
 /**
- * Retrieves the display color definition for an annotation preset color.
+ * Retrieves the display color definition for an annotation preset or hex color.
  */
-export function getColorDefinition(color: PresetColor) {
-  return PRESET_COLORS[color] || PRESET_COLORS.amber;
+export function getColorDefinition(color: AnnotationColor) {
+  return resolveColor(color);
 }
 
 /**
- * Filters out visual effect annotations (highlight, blur) that are not numbered notes.
+ * Filters out unnumbered annotations (highlight, blur, text) that are not numbered notes.
  */
 export function filterAnnotatableAnnotations(annotations: Annotation[]): Annotation[] {
   if (!annotations) return [];
-  return annotations.filter(
-    (ann) => ann.geometry.type !== 'highlight' && ann.geometry.type !== 'blur'
-  );
+  return annotations.filter((ann) => isAnnotatableGeometry(ann.geometry));
 }
 
 /**

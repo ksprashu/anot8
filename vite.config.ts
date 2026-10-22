@@ -47,12 +47,29 @@ export default defineConfig({
   },
   test: {
     globals: true,
-    environment: 'jsdom',
-    setupFiles: ['./tests/setup.ts'],
-    css: true,
     testTimeout: 20000,
-    include: ['src/**/*.{test,spec}.{ts,tsx}', 'tests/**/*.{test,spec}.{ts,tsx}'],
-    exclude: ['node_modules/**', 'tests/e2e/test-runner.ts', 'tests/e2e/tier*', 'tests/e2e/r1-r5-tier*'],
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: 'dom',
+          environment: 'jsdom',
+          setupFiles: ['./tests/setup.ts'],
+          css: true,
+          include: ['src/**/*.{test,spec}.{ts,tsx}', 'tests/**/*.{test,spec}.{ts,tsx}'],
+          exclude: ['node_modules/**', 'tests/node/**', 'tests/e2e/test-runner.ts', 'tests/e2e/tier*', 'tests/e2e/r1-r5-tier*'],
+        },
+      },
+      {
+        // Headless renderer, spec compiler, CLI, and MCP server run in plain Node (real @napi-rs/canvas)
+        extends: true,
+        test: {
+          name: 'node',
+          environment: 'node',
+          include: ['tests/node/**/*.test.ts'],
+        },
+      },
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

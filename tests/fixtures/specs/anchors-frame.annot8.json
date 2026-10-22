@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "image": { "source": "../screen.png" },
+  "frame": { "crop": { "x": 200, "y": 70, "width": 580, "height": 400 }, "padding": 32, "background": "#0F172A" },
+  "annotations": [
+    { "id": "submit", "type": "box", "x": 246, "y": 326, "width": 148, "height": 52, "color": "green", "note": "Submit button" },
+    { "id": "label", "type": "text", "at": { "anchor": "@submit.right", "dx": 120, "dy": -18 }, "text": "Click here", "color": "green" },
+    { "type": "arrow", "from": "@label.left", "to": "@submit.right", "color": "green", "badge": false },
+    { "type": "pin", "at": "@field.top-right", "color": "red", "note": "Forward reference to a later id" },
+    { "id": "field", "type": "box", "x": 250, "y": 176, "width": 480, "height": 40, "color": "red" }
+  ]
+}

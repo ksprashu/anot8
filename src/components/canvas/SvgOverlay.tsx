@@ -1,5 +1,6 @@
 import React, { useRef, useState, useCallback } from 'react';
 import { useApp } from '../../state/AppContext';
+import { isAnnotatableGeometry } from '../../state/appReducer';
 import {
   Point,
   AnnotationGeometry,
@@ -575,9 +576,9 @@ export const SvgOverlay: React.FC<SvgOverlayProps> = ({ className = '' }) => {
               strokeWidth: activeStrokeWidth,
               fillOpacity: activeFillOpacity,
             },
-            index: drawingState.draftGeometry.type === 'highlight' || drawingState.draftGeometry.type === 'blur'
-              ? 0
-              : annotations.filter((a) => a.geometry.type !== 'highlight' && a.geometry.type !== 'blur').length + 1,
+            index: isAnnotatableGeometry(drawingState.draftGeometry)
+              ? annotations.filter((a) => isAnnotatableGeometry(a.geometry)).length + 1
+              : 0,
           }}
           isDraft={true}
           resolutionScale={resolutionScale}

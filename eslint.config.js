@@ -5,7 +5,7 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  { ignores: ['dist', 'coverage'] },
+  { ignores: ['dist', 'dist-cli', 'coverage'] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx}'],
@@ -29,5 +29,32 @@ export default tseslint.config(
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
     },
+  },
+  {
+    // Portable core: runs headless in the CLI/MCP server, so no React and no DOM globals.
+    files: [
+      'src/core/**/*.ts',
+      'src/spec/**/*.ts',
+      'src/math/**/*.ts',
+      'src/state/appReducer.ts',
+      'src/export/canvasExporter.ts',
+      'src/export/markdownSerializer.ts',
+    ],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        { patterns: [{ group: ['react', 'react-dom', 'react/*', 'react-dom/*'], message: 'Portable core must not depend on React.' }] },
+      ],
+      'no-restricted-globals': [
+        'error',
+        { name: 'window', message: 'Portable core must not touch the DOM; inject a RenderBackend instead.' },
+        { name: 'document', message: 'Portable core must not touch the DOM; inject a RenderBackend instead.' },
+        { name: 'Image', message: 'Portable core must not touch the DOM; inject a RenderBackend instead.' },
+      ],
+    },
+  },
+  {
+    files: ['cli/**/*.ts', 'src/core/node/**/*.ts', 'tests/node/**/*.ts', 'tsup.config.ts'],
+    languageOptions: { globals: globals.node },
   },
 );

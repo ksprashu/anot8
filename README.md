@@ -12,7 +12,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue?logo=typescript&logoColor=white&style=flat-square)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-18.3-61DAFB?logo=react&logoColor=black&style=flat-square)](https://react.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38B2AC?logo=tailwind-css&logoColor=white&style=flat-square)](https://tailwindcss.com/)
-[![Vitest](https://img.shields.io/badge/Tests-52%2F52%20Suites%20Passing%20(763%20Tests)-brightgreen?logo=vitest&logoColor=white&style=flat-square)](tests/)
+[![Vitest](https://img.shields.io/badge/Tests-84%2F84%20Files%20Passing%20(1498%20Tests)-brightgreen?logo=vitest&logoColor=white&style=flat-square)](tests/)
 [![GitHub Pages](https://img.shields.io/badge/Deployment-GitHub%20Pages-222222?logo=github&logoColor=white&style=flat-square)](.github/workflows/deploy-pages.yml)
 
 </div>
@@ -32,6 +32,7 @@
 - [System Architecture](#-system-architecture)
 - [Comprehensive Keyboard Shortcuts](#-comprehensive-keyboard-shortcuts)
 - [Install as an App](#-install-as-an-app)
+- [Agent Usage (CLI, MCP, Browser)](#-agent-usage-cli-mcp-browser)
 - [Getting Started & Local Development](#-getting-started--local-development)
 - [Testing & Quality Assurance](#-testing--quality-assurance)
 - [Production Deployment](#-production-deployment)
@@ -64,7 +65,9 @@ Developers, technical writers, support engineers, and product teams constantly c
 - **Ellipses / Circles**: Circle focal elements with corner or center-anchored geometry.
 - **Directional Arrows**: Point to specific controls with 30° arrowhead wings and tail-anchored numbered badges.
 - **Numbered Callout Pins**: Place compact numbered badge pins directly over UI targets.
-- **High-Contrast Palette**: 5 calibrated color presets (Red, Amber, Green, Cyan, Purple) designed for maximum visibility over light and dark screenshots.
+- **High-Contrast Palette**: 5 calibrated color presets (Red, Amber, Green, Cyan, Purple) designed for maximum visibility over light and dark screenshots. Specs can also use any hex color; badge text picks black or white for contrast.
+- **Spotlight & Redaction**: Highlight dims everything outside the selected regions, and Blur bakes an unrecoverable Gaussian blur into the export. Neither takes a number badge.
+- **Text Labels & Frames** (spec only): Free-standing text callouts, plus crop and padding with a background color applied at export.
 - **Interactive Transform Handles**: 8-point bounding box resize handles and drag-to-move capabilities in native image space.
 
 ### 🔢 Dynamic Sequence Invariant ($1..N$)
@@ -88,6 +91,12 @@ Developers, technical writers, support engineers, and product teams constantly c
 - **Focal-Point Zoom & Pan**: Smooth wheel/pinch zoom centered on cursor focal point, spacebar-drag panning, and middle-click pan.
 - **50-Step Undo / Redo**: Complete immutable state history stack with pointer-up transaction batching.
 - **Zero Network Egress**: Once loaded, operates completely offline with full client-side execution.
+
+### 🤖 Parametric Editing for AI Agents
+- **Annot8 spec**: A JSON document format (`.annot8.json`) that describes the image, frame, and annotations, with percentage coordinates and anchors such as `"@submit.right"`.
+- **Headless rendering**: The same Canvas2D exporter runs in Node via `@napi-rs/canvas`, so the CLI and MCP server produce the same PNG as the Export button.
+- **Local only**: A CLI, a stdio MCP server, and a `window.annot8` browser bridge. Nothing is hosted. See [Agent Usage](#-agent-usage-cli-mcp-browser).
+- **Round trip with people**: Save the current canvas as a spec, or drop or paste a spec onto the app to load it.
 
 ---
 
@@ -135,6 +144,15 @@ Annot8 is structured around a **5-Layer Hybrid Architecture** that cleanly separ
 │  └───────────────────────────────┘   └───────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
+
+The reducer, geometry math, markdown serializer, and Canvas2D exporter form a **portable core** with no React or DOM dependencies (enforced by ESLint). The exporter takes an injectable `RenderBackend`: the browser one in the app, `@napi-rs/canvas` in Node. On top of that core:
+
+| Module | Role |
+|---|---|
+| `src/spec/` | Zod schema for the Annot8 spec, `compileSpec` (percentages and anchors → annotations), `toSpec`, and edit `applyOps` |
+| `src/core/node/` | Node render backend and `renderSpec` (PNG plus markdown) |
+| `cli/` | The `annot8` CLI and the stdio MCP server, bundled by tsup to `dist-cli/` |
+| `src/bridge/` | `window.annot8` session, `#spec=` links, and spec drop/paste in the app |
 
 ---
 
@@ -188,6 +206,32 @@ App icons are generated from `public/logo.svg` and `scripts/logo-maskable.svg` w
 
 ---
 
+## 🤖 Agent Usage (CLI, MCP, Browser)
+
+AI agents and scripts can use Annot8 as a parametric editor. They describe annotations as a JSON spec, render it headlessly, look at the result, and adjust with edit ops. Everything runs locally: a CLI, a stdio MCP server that runs as a subprocess of the agent, and a `window.annot8` bridge in the app.
+
+```json
+{
+  "version": 1,
+  "image": { "source": "shot.png" },
+  "annotations": [
+    { "id": "submit", "type": "box", "x": "30%", "y": 326, "width": 148, "height": 52, "color": "#22C55E", "note": "Primary action" },
+    { "type": "text", "at": { "anchor": "@submit.right", "dx": 24 }, "text": "Make this full width" },
+    { "type": "blur", "x": 550, "y": 392, "width": 190, "height": 32 }
+  ]
+}
+```
+
+```bash
+npm run build:cli && npm link
+annot8 render shot.annot8.json -o out.png --md notes.md
+annot8 apply shot.annot8.json --ops '[{"op":"update","id":"submit","set":{"x":300}}]' --in-place
+```
+
+See **[docs/agent-usage.md](docs/agent-usage.md)** for the spec reference (anchors, percentages, hex colors, text labels, crop and padding), the edit ops, the MCP tools, and the browser bridge.
+
+---
+
 ## 🚀 Getting Started & Local Development
 
 ### Prerequisites
@@ -228,11 +272,20 @@ App icons are generated from `public/logo.svg` and `scripts/logo-maskable.svg` w
 
 ## 🧪 Testing & Quality Assurance
 
-Annot8 features a comprehensive 51-suite automated test matrix covering unit math, React components, integration pipelines, and 4-tier opaque-box E2E scenarios.
+Annot8 has an automated test matrix covering unit math, React components, integration pipelines, 4-tier opaque-box E2E scenarios, and headless agent surfaces. Vitest runs two projects: `dom` (jsdom, everything under `tests/` except `tests/node/`) and `node` (golden image renders, CLI, and MCP server over stdio).
 
 ```bash
-# Run the complete test suite (51 suites, 758 tests)
+# Run the complete test suite (84 files, 1498 tests)
 npm test
+
+# Run only the headless spec, CLI, and MCP tests
+npx vitest run --project node
+
+# Regenerate golden images after an intentional rendering change
+UPDATE_GOLDEN=1 npx vitest run --project node
+
+# Run the master E2E feature suite
+npm run test:e2e
 
 # Run tests in interactive watch mode
 npm run test:watch
@@ -245,6 +298,9 @@ npm run typecheck
 
 # Run ESLint validation
 npm run lint
+
+# Build the CLI and MCP server into dist-cli/
+npm run build:cli
 ```
 
 ---

@@ -90,6 +90,12 @@ Annot8 is designed as a zero-backend, 100% client-side web application structure
    - Semantic dark and light theme tokens with automatic system preference detection and localStorage persistence.
    - Keyboard navigation and accessible shortcuts modal.
 
+### Portable core and agent surfaces
+
+The reducer (`src/state/appReducer.ts`), geometry math (`src/math/`), markdown serializer, Canvas2D exporter, spec compiler (`src/spec/`), and Node backend (`src/core/`) must not import React or touch `window`, `document`, or `Image`. ESLint enforces this so the same code renders headlessly in Node. The exporter receives canvases and images through an injectable `RenderBackend`.
+
+The CLI and MCP server (`cli/`) and the browser bridge (`src/bridge/`) are thin layers over the spec. If you change annotation types or styles, update `src/spec/schema.ts`, `compileSpec`, and `toSpec` together, and regenerate the golden images. See [docs/agent-usage.md](docs/agent-usage.md).
+
 ---
 
 ## Code Standards & Conventions
@@ -131,6 +137,12 @@ npm run test:watch
 
 # Run tests with code coverage
 npm run test:coverage
+
+# Run only the headless (Node) project: golden renders, CLI, MCP
+npx vitest run --project node
+
+# Regenerate golden images after an intentional rendering change, then review the PNG diffs
+UPDATE_GOLDEN=1 npx vitest run --project node
 ```
 
 ### Test Organization
@@ -138,6 +150,8 @@ npm run test:coverage
 - **Unit Tests (`tests/unit/`)**: Coordinate math, geometry transforms, arrowheads, badge anchoring, reducer transitions, markdown serialization, and theme persistence.
 - **Component Tests (`tests/component/`)**: UI components, toolbars, color pickers, sidebar synchronization, markdown editor, and modals.
 - **Integration Tests (`tests/integration/`)**: Canvas export pipeline, offscreen rasterization, clipboard actions, and bidirectional hover states.
+- **Spec & Bridge Tests (`tests/unit/spec.test.ts`, `tests/unit/agentBridge.test.tsx`)**: Spec validation, percentage and anchor resolution, edit ops, round trips, and the `window.annot8` session.
+- **Headless Tests (`tests/node/`)**: Golden image renders of `tests/fixtures/specs/*` compared with `tests/fixtures/golden/*` (pixelmatch, small tolerance for font differences), plus the built CLI and the MCP server over stdio.
 - **E2E & Stress Tests (`tests/e2e/`, `tests/stress/`)**: Multi-tier opaque-box scenarios, boundary conditions, rapid lifecycle oscillations, and large annotation datasets (100+ items).
 
 ---
@@ -170,6 +184,7 @@ We use a standard GitHub feature branch and Pull Request workflow:
    npm run lint
    npm test
    npm run build
+   npm run build:cli
    ```
 
 5. **Submit a Pull Request**:

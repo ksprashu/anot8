@@ -6,6 +6,7 @@ import {
   FileDown,
   Layers,
   Loader2,
+  FileJson,
 } from 'lucide-react';
 import { useApp } from '../../state/AppContext';
 import { useToast, ToastType } from './ToastNotification';
@@ -19,6 +20,7 @@ import {
   downloadTextFile,
 } from '../../export/clipboard';
 import { trackCopy } from '../../analytics/telemetry';
+import { toSpec } from '../../spec';
 
 export interface ExportActionsProps {
   className?: string;
@@ -72,12 +74,13 @@ export const ExportActions: React.FC<ExportActionsProps> = ({
   );
 
   const [exportingType, setExportingType] = useState<
-    'image' | 'notes' | 'png' | 'md' | 'combined' | null
+    'image' | 'notes' | 'png' | 'md' | 'combined' | 'spec' | null
   >(null);
 
   const image = appState?.image ?? null;
   const annotations = appState?.annotations ?? [];
   const overlays = appState?.overlays ?? [];
+  const frame = appState?.frame;
 
   const hasImage = Boolean(image);
   const hasAnnotations = annotations.length > 0;
@@ -94,7 +97,7 @@ export const ExportActions: React.FC<ExportActionsProps> = ({
 
     setExportingType('image');
     try {
-      const blob = await exportCompositeBlob(image, annotations, overlays);
+      const blob = await exportCompositeBlob(image, annotations, overlays, { frame });
       const res = await writeImageToClipboard(blob);
 
       if (res.success && !res.fallbackUsed) {
@@ -154,7 +157,7 @@ export const ExportActions: React.FC<ExportActionsProps> = ({
 
     setExportingType('combined');
     try {
-      const blob = await exportCompositeBlob(image, annotations, overlays);
+      const blob = await exportCompositeBlob(image, annotations, overlays, { frame });
       const markdown = serializeAnnotationsToMarkdown(annotations, {
         imageFileName: image?.fileName,
       });
@@ -187,7 +190,7 @@ export const ExportActions: React.FC<ExportActionsProps> = ({
 
     setExportingType('png');
     try {
-      const blob = await exportCompositeBlob(image, annotations, overlays);
+      const blob = await exportCompositeBlob(image, annotations, overlays, { frame });
       const baseName = sanitizeBaseFilename(image?.fileName);
       downloadBlob(blob, `${baseName}-annotated.png`);
       notify('success', 'Exported PNG screenshot!', `${baseName}-annotated.png`);
@@ -219,6 +222,25 @@ export const ExportActions: React.FC<ExportActionsProps> = ({
     } catch (err: any) {
       console.error('Failed to export markdown:', err);
       notify('error', 'Failed to export markdown', err?.message || 'Serialization error');
+    } finally {
+      setExportingType(null);
+    }
+  };
+
+  // 6. Save the document as an Annot8 spec (reloadable by drop, the CLI, or agents)
+  const handleSaveSpec = async () => {
+    if (disabled || isBusy || !image) return;
+    setExportingType('spec');
+    try {
+      // The agent bridge keeps anchors from a loaded spec and embeds blob: images; fall back to a pixel spec.
+      const spec = window.annot8
+        ? await window.annot8.getSpec()
+        : toSpec({ image, annotations, frame });
+      const baseName = sanitizeBaseFilename(image.fileName);
+      downloadTextFile(`${JSON.stringify(spec, null, 2)}\n`, `${baseName}.annot8.json`, 'application/json');
+      notify('success', 'Saved Annot8 spec', `${baseName}.annot8.json`);
+    } catch (err: unknown) {
+      notify('error', 'Failed to save spec', err instanceof Error ? err.message : String(err));
     } finally {
       setExportingType(null);
     }
@@ -323,6 +345,23 @@ export const ExportActions: React.FC<ExportActionsProps> = ({
           <Loader2 className="w-4 h-4 animate-spin" data-testid="spinner-export-md" />
         ) : (
           <FileDown className="w-4 h-4" />
+        )}
+      </button>
+
+      {/* Save Annot8 spec */}
+      <button
+        type="button"
+        data-testid="btn-save-spec"
+        onClick={handleSaveSpec}
+        disabled={disabled || !hasImage || isBusy}
+        className="flex items-center gap-1 p-1.5 rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-30 disabled:hover:bg-transparent disabled:cursor-not-allowed cursor-pointer active:scale-95"
+        title="Save as an editable Annot8 spec (.annot8.json)"
+        aria-label="Save Annot8 spec"
+      >
+        {exportingType === 'spec' ? (
+          <Loader2 className="w-4 h-4 animate-spin" data-testid="spinner-save-spec" />
+        ) : (
+          <FileJson className="w-4 h-4" />
         )}
       </button>
     </div>

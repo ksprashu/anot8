@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "image": { "source": "../screen.png" },
+  "annotations": [
+    { "id": "title", "type": "box", "x": 244, "y": 114, "width": 232, "height": 36, "note": "Page title" },
+    { "id": "email", "type": "ellipse", "x": 240, "y": 168, "width": 500, "height": 56, "color": "cyan", "note": "Email field" },
+    { "type": "arrow", "from": [620, 300], "to": [400, 352], "color": "red", "note": "Primary action" },
+    { "type": "pin", "at": [100, 135], "color": "green", "note": "Active nav item" },
+    { "type": "box", "x": 590, "y": 12, "width": 196, "height": 32, "color": "purple", "radius": 8, "badge": false }
+  ]
+}

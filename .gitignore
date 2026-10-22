@@ -6,6 +6,7 @@ node_modules/
 # Production build output
 dist/
 dist-ssr/
+dist-cli/
 *.local
 
 # TypeScript build cache & generated config outputs

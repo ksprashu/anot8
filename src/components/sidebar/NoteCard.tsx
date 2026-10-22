@@ -5,7 +5,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { Annotation } from '../../types';
-import { PRESET_COLORS } from '../../constants/colors';
+import { resolveColor } from '../../constants/colors';
 import { useApp } from '../../state/AppContext';
 import { MarkdownEditor } from './MarkdownEditor';
 import { formatTimestamp, getShapeTypeMeta } from '../../utils/sidebar';
@@ -69,7 +69,7 @@ export const NoteCard: React.FC<NoteCardProps> = ({
     }
   }, [isHovered]);
 
-  const colorDef = PRESET_COLORS[annotation.style.color] || PRESET_COLORS.amber;
+  const colorDef = resolveColor(annotation.style.color);
   const shapeMeta = getShapeTypeMeta(annotation.geometry.type);
   const ShapeIcon = shapeMeta.icon;
   const timeString = formatTimestamp(annotation.updatedAt || annotation.createdAt);

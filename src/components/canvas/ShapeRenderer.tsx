@@ -1,8 +1,9 @@
 import React from 'react';
 import { AnnotationGeometry, AnnotationStyle } from '../../types';
-import { PRESET_COLORS } from '../../constants/colors';
+import { resolveColor } from '../../constants/colors';
 import { calculateArrowhead } from '../../math/geometry';
 import { getBadgePositionForShape } from '../../math/badges';
+import { estimateTextWidth, labelFont, layoutTextLabel, LABEL_FONT_FAMILY, LABEL_FONT_WEIGHT, TextMeasurer } from '../../math/text';
 import { BadgeRenderer } from './BadgeRenderer';
 import { AnnotationDeleteButton } from './AnnotationDeleteButton';
 import { useApp } from '../../state/AppContext';
@@ -36,6 +37,26 @@ export function hexToRgba(hex: string, opacity: number): string {
   return `rgba(${r}, ${g}, ${b}, ${Math.max(0, Math.min(1, opacity))})`;
 }
 
+let measureCtx: CanvasRenderingContext2D | null | undefined;
+
+/**
+ * Measures label text with a shared offscreen 2D context so the SVG preview sizes
+ * label boxes like the canvas exporter. Falls back to an estimate where canvas is unavailable.
+ */
+const domTextMeasurer: TextMeasurer = (text, fontSize) => {
+  if (measureCtx === undefined) {
+    try {
+      measureCtx = typeof document !== 'undefined' ? document.createElement('canvas').getContext('2d') : null;
+    } catch {
+      measureCtx = null;
+    }
+  }
+  if (!measureCtx || typeof measureCtx.measureText !== 'function') return estimateTextWidth(text, fontSize);
+  measureCtx.font = labelFont(fontSize);
+  const width = measureCtx.measureText(text)?.width;
+  return typeof width === 'number' && Number.isFinite(width) && width > 0 ? width : estimateTextWidth(text, fontSize);
+};
+
 export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
   annotation,
   isSelected = false,
@@ -49,8 +70,9 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
   onDelete,
 }) => {
   const { geometry, style, index = 1 } = annotation;
-  const colorDef = PRESET_COLORS[style.color] || PRESET_COLORS.amber;
+  const colorDef = resolveColor(style.color);
   const fillColor = hexToRgba(colorDef.hex, style.fillOpacity);
+  const showBadge = style.showBadge !== false;
 
   let appDispatch: any = null;
   try {
@@ -203,7 +225,7 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
             strokeWidth={style.strokeWidth}
             strokeDasharray={isDraft ? '6 4' : undefined}
           />
-          <BadgeRenderer
+          {showBadge && <BadgeRenderer
             annotation={annotation.id ? { id: annotation.id, index, geometry, style, note: '', createdAt: 0, updatedAt: 0 } : undefined}
             index={index}
             position={badgePos}
@@ -212,7 +234,7 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
             isHovered={isHovered}
             isDraft={isDraft}
             scale={resolutionScale}
-          />
+          />}
           {showDeleteBtn && (
             <AnnotationDeleteButton
               position={deletePos}
@@ -258,7 +280,7 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
             strokeWidth={style.strokeWidth}
             strokeDasharray={isDraft ? '6 4' : undefined}
           />
-          <BadgeRenderer
+          {showBadge && <BadgeRenderer
             annotation={annotation.id ? { id: annotation.id, index, geometry, style, note: '', createdAt: 0, updatedAt: 0 } : undefined}
             index={index}
             position={badgePos}
@@ -267,7 +289,7 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
             isHovered={isHovered}
             isDraft={isDraft}
             scale={resolutionScale}
-          />
+          />}
           {showDeleteBtn && (
             <AnnotationDeleteButton
               position={deletePos}
@@ -347,7 +369,7 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
               strokeLinejoin="round"
             />
           </g>
-          <BadgeRenderer
+          {showBadge && <BadgeRenderer
             annotation={annotation.id ? { id: annotation.id, index, geometry, style, note: '', createdAt: 0, updatedAt: 0 } : undefined}
             index={index}
             position={badgePos}
@@ -356,7 +378,7 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
             isHovered={isHovered}
             isDraft={isDraft}
             scale={resolutionScale}
-          />
+          />}
           {showDeleteBtn && (
             <AnnotationDeleteButton
               position={deletePos}
@@ -416,7 +438,7 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
               strokeDasharray={isDraft ? '4 3' : undefined}
               filter="url(#badge-drop-shadow)"
             />
-            <text
+            {showBadge && <text
               data-testid={`badge-text-${index}`}
               x={x}
               y={headCenterY}
@@ -429,8 +451,67 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
               className="select-none pointer-events-none"
             >
               {index}
-            </text>
+            </text>}
           </g>
+          {showDeleteBtn && (
+            <AnnotationDeleteButton
+              position={deletePos}
+              scale={resolutionScale}
+              annotationId={annotation.id!}
+              onDelete={handleDelete}
+            />
+          )}
+        </g>
+      );
+    }
+
+    case 'text': {
+      const layout = layoutTextLabel(geometry, domTextMeasurer);
+      const { box } = layout;
+      const deletePos = { x: box.x + box.width, y: box.y };
+
+      return (
+        <g data-testid="shape-text" data-annotation-id={annotation.id} {...groupProps}>
+          {(isHovered || isSelected) && (
+            <rect
+              x={box.x - 3}
+              y={box.y - 3}
+              width={box.width + 6}
+              height={box.height + 6}
+              rx={layout.radius + 2}
+              ry={layout.radius + 2}
+              fill="none"
+              stroke={colorDef.stroke}
+              strokeWidth={6}
+              strokeOpacity={isSelected ? 0.5 : 0.3}
+              className="pointer-events-none"
+            />
+          )}
+          <rect
+            x={box.x}
+            y={box.y}
+            width={box.width}
+            height={box.height}
+            rx={layout.radius}
+            ry={layout.radius}
+            fill={colorDef.badgeBg}
+            strokeDasharray={isDraft ? '6 4' : undefined}
+            filter="url(#badge-drop-shadow)"
+          />
+          <text
+            fill={colorDef.badgeText}
+            fontSize={geometry.fontSize}
+            fontWeight={LABEL_FONT_WEIGHT}
+            fontFamily={LABEL_FONT_FAMILY}
+            dominantBaseline="central"
+            className="select-none pointer-events-none"
+          >
+            {layout.lines.map((line, i) => (
+              <tspan key={i} x={line.x} y={line.y}>
+                {line.text}
+              </tspan>
+            ))}
+          </text>
           {showDeleteBtn && (
             <AnnotationDeleteButton
               position={deletePos}

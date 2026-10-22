@@ -34,6 +34,13 @@ It is built with a Layered Hybrid Architecture for ultra-fast 60 FPS viewport in
 - Automatically scales callout badges and pins based on image resolution (e.g. 2K/4K/Retina) or options override.
 - Generates standard `image/png` blob for clipboard copy and file download.
 
+### 6. Parametric Spec & Agent Surfaces
+- **Portable core**: `appReducer`, `src/math/*`, `markdownSerializer`, and `canvasExporter` have no React or DOM dependencies (ESLint-enforced). `canvasExporter` takes an injectable `RenderBackend { createCanvas, loadImage }`: `browserBackend` in the app, `createNodeBackend()` (`@napi-rs/canvas`) in `src/core/node/backend.ts`.
+- **Model additions**: hex colors via `resolveColor()` (`src/constants/colors.ts`), unnumbered `TextGeometry`, `AnnotationStyle.showBadge`, and `AppState.frame { crop?, padding?, background? }` applied at export. `SET_ANNOTATIONS` replaces the whole list and reindexes.
+- **Spec** (`src/spec/`): zod v4 schema with version 1, `image.source`, `frame`, `defaults`, and `annotations`. Coordinates can be pixels or percentages. Points can be anchors (`@id.position` or `{anchor, dx, dy}`). `compileSpec` resolves the spec to annotations; `toSpec` derives a pixel spec from state; `applyOps` edits at the spec level (add/update/delete/reorder/clear/setFrame), so anchors stay live. Errors are a `SpecError` with path-addressed issues.
+- **CLI / MCP** (`cli/annot8.ts`, `cli/mcp.ts`): `inspect`, `init`, `render`, `validate`, `apply`, `schema`, and `mcp` (stdio). Bundled by tsup to `dist-cli/annot8.js`. `annot8_render` returns the rendered PNG as MCP image content.
+- **Browser bridge** (`src/bridge/`): `window.annot8 = AgentSession { schema, getSpec, loadSpec, apply, render, markdown }`, plus `#spec=<base64url>` links, spec drop/paste, and a Save spec export button.
+
 ---
 
 ## Feature Inventory
@@ -182,3 +189,8 @@ It is built with a Layered Hybrid Architecture for ultra-fast 60 FPS viewport in
 - `src/components/modals/ReplaceImageModal.tsx`: Paste replacement dialog.
 - `src/export/canvasExporter.ts`: 2D canvas composite rasterizer (overlays, destination-out highlight, destructive blur baking, scaled badges).
 - `src/utils/sidebar.ts`: Sidebar tags and metadata for Highlight and Blur.
+- `src/math/text.ts`: Text label measurement and bounding boxes.
+- `src/spec/`: Spec schema, compiler, `toSpec`, and edit ops.
+- `src/core/node/`: Node render backend and `renderSpec`.
+- `src/bridge/`: `AgentSession` and the `AgentBridge` component (`window.annot8`).
+- `cli/`: `annot8` CLI and MCP server.

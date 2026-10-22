@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react';
 import { useApp } from '../../state/AppContext';
+import { isAnnotatableGeometry } from '../../state/appReducer';
 import { NoteCard } from './NoteCard';
 import { EmptySidebarState } from './EmptySidebarState';
 import {
@@ -41,9 +42,7 @@ export const NotesSidebar: React.FC<NotesSidebarProps> = ({
 
   const allAnnotations = appState ? appState.annotations : [];
   // Only annotatable callouts (box, ellipse, arrow, pin) appear as notes in the sidebar
-  const annotations = allAnnotations.filter(
-    (ann) => ann.geometry.type !== 'highlight' && ann.geometry.type !== 'blur'
-  );
+  const annotations = allAnnotations.filter((ann) => isAnnotatableGeometry(ann.geometry));
   const selectedAnnotationId = appState ? appState.selectedAnnotationId : null;
   const hoveredAnnotationId = appState ? appState.hoveredAnnotationId : null;
   const stateIsOpen = appState ? appState.isSidebarOpen : true;

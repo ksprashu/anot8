@@ -3,6 +3,10 @@
     "cloudflare-api": {
       "type": "http",
       "url": "https://mcp.cloudflare.com/mcp"
+    },
+    "annot8": {
+      "command": "node",
+      "args": ["dist-cli/annot8.js", "mcp"]
     }
   }
 }

@@ -62,6 +62,7 @@ export function getBadgePositionForShape(geometry: AnnotationGeometry, scale: nu
     case 'box':
     case 'highlight':
     case 'blur':
+    case 'text':
       // Anchored at top-left corner
       return {
         x: geometry.x,

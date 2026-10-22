@@ -50,7 +50,8 @@ export function isSnapshotEqual(a: HistorySnapshot, b: HistorySnapshot): boolean
       annA.note !== annB.note ||
       annA.style.color !== annB.style.color ||
       annA.style.strokeWidth !== annB.style.strokeWidth ||
-      annA.style.fillOpacity !== annB.style.fillOpacity
+      annA.style.fillOpacity !== annB.style.fillOpacity ||
+      annA.style.showBadge !== annB.style.showBadge
     ) {
       return false;
     }
@@ -82,6 +83,16 @@ export function isSnapshotEqual(a: HistorySnapshot, b: HistorySnapshot): boolean
       }
     } else if (gA.type === 'pin' && gB.type === 'pin') {
       if (gA.x !== gB.x || gA.y !== gB.y) {
+        return false;
+      }
+    } else if (gA.type === 'text' && gB.type === 'text') {
+      if (
+        gA.x !== gB.x ||
+        gA.y !== gB.y ||
+        gA.text !== gB.text ||
+        gA.fontSize !== gB.fontSize ||
+        gA.align !== gB.align
+      ) {
         return false;
       }
     }

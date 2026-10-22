@@ -1,7 +1,17 @@
-import { BaseImage, Annotation, PresetColor, ImageOverlay, HighlightGeometry, BlurGeometry } from '../types';
-import { PRESET_COLORS } from '../constants/colors';
+import { BaseImage, Annotation, AnnotationColor, Frame, ImageOverlay, HighlightGeometry, BlurGeometry } from '../types';
+import { resolveColor } from '../constants/colors';
 import { calculateArrowhead } from '../math/geometry';
 import { getBadgePositionForShape, getBadgeDimensions, computeResolutionScale } from '../math/badges';
+import { labelFont, layoutTextLabel } from '../math/text';
+
+/**
+ * Supplies canvases and decoded images to the renderer, so the same Canvas2D code
+ * runs in the browser (DOM) and in Node (@napi-rs/canvas, see src/core/node/backend.ts).
+ */
+export interface RenderBackend {
+  createCanvas(width: number, height: number): HTMLCanvasElement;
+  loadImage(src: string): Promise<CanvasImageSource>;
+}
 
 export interface ExportCanvasOptions {
   pixelRatio?: number; // Default 1.0 (exact 1:1 native)
@@ -9,6 +19,8 @@ export interface ExportCanvasOptions {
   drawDrafts?: boolean; // Default false
   overlays?: ImageOverlay[]; // Optional overlay layers list
   scale?: number; // Optional resolution scale override
+  frame?: Frame; // Optional crop / padding applied to the output
+  backend?: RenderBackend; // Default: browser DOM backend
 }
 
 /**
@@ -64,6 +76,8 @@ export function drawRoundRect(
   ctx.arcTo(x, y, x + r, y, r);
   ctx.closePath();
 }
+
+/* eslint-disable no-restricted-globals -- browser RenderBackend: the only DOM access in this module */
 
 /**
  * Loads an HTMLImageElement asynchronously from a source URL or Data URL.
@@ -141,6 +155,13 @@ export function createCanvas(width: number, height: number): HTMLCanvasElement {
   throw new Error('DOM document is not available to create HTMLCanvasElement');
 }
 
+/* eslint-enable no-restricted-globals */
+
+export const browserBackend: RenderBackend = {
+  createCanvas,
+  loadImage: loadImageElement,
+};
+
 /**
  * Downscale/upscale pixel diffusion fallback for environments lacking ctx.filter.
  * Downscales the source subregion by ~10x into a small temporary canvas,
@@ -152,12 +173,13 @@ export function bakeBlurFallback(
   x: number,
   y: number,
   w: number,
-  h: number
+  h: number,
+  backend: RenderBackend = browserBackend
 ): void {
   if (w <= 0 || h <= 0) return;
   const sampleW = Math.max(2, Math.round(w / 10));
   const sampleH = Math.max(2, Math.round(h / 10));
-  const smallCanvas = createCanvas(sampleW, sampleH);
+  const smallCanvas = backend.createCanvas(sampleW, sampleH);
   const smallCtx = smallCanvas.getContext('2d');
   if (!smallCtx) return;
 
@@ -177,10 +199,10 @@ export function rasterizeBadge(
   ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
   position: { x: number; y: number },
   index: number,
-  color: PresetColor,
+  color: AnnotationColor,
   scale: number = 1.0
 ): void {
-  const colorDef = PRESET_COLORS[color] || PRESET_COLORS.amber;
+  const colorDef = resolveColor(color);
   const dims = getBadgeDimensions(index, scale);
   const { width, height, radius, isPill, fontSize } = dims;
 
@@ -231,8 +253,9 @@ export function rasterizeAnnotation(
   scale: number = 1.0
 ): void {
   const { geometry, style, index } = annotation;
-  const colorDef = PRESET_COLORS[style.color] || PRESET_COLORS.amber;
+  const colorDef = resolveColor(style.color);
   const fillColor = hexToRgba(colorDef.hex, style.fillOpacity);
+  const showBadge = style.showBadge !== false;
 
   ctx.save();
 
@@ -250,7 +273,7 @@ export function rasterizeAnnotation(
       ctx.stroke();
 
       // Render Numbered Badge at top-left corner
-      rasterizeBadge(ctx, { x, y }, index, style.color, scale);
+      if (showBadge) rasterizeBadge(ctx, { x, y }, index, style.color, scale);
       break;
     }
 
@@ -291,8 +314,10 @@ export function rasterizeAnnotation(
       ctx.stroke();
 
       // Render Numbered Badge at 225 deg diagonal apex
-      const badgePos = getBadgePositionForShape(geometry, scale);
-      rasterizeBadge(ctx, badgePos, index, style.color, scale);
+      if (showBadge) {
+        const badgePos = getBadgePositionForShape(geometry, scale);
+        rasterizeBadge(ctx, badgePos, index, style.color, scale);
+      }
       break;
     }
 
@@ -362,7 +387,7 @@ export function rasterizeAnnotation(
       ctx.globalCompositeOperation = 'source-over';
 
       // Pass 3: Render tail-anchored badge at (startX, startY)
-      rasterizeBadge(ctx, { x: startX, y: startY }, index, style.color, scale);
+      if (showBadge) rasterizeBadge(ctx, { x: startX, y: startY }, index, style.color, scale);
       break;
     }
 
@@ -433,17 +458,60 @@ export function rasterizeAnnotation(
       ctx.stroke();
 
       // Pin Index Text
-      ctx.fillStyle = colorDef.badgeText;
-      ctx.font = `700 ${fontSize}px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(String(index), x, headCenterY);
+      if (showBadge) {
+        ctx.fillStyle = colorDef.badgeText;
+        ctx.font = `700 ${fontSize}px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(String(index), x, headCenterY);
+      }
       ctx.restore();
+      break;
+    }
+
+    case 'text': {
+      ctx.font = labelFont(geometry.fontSize);
+      const layout = layoutTextLabel(geometry, (text) => ctx.measureText(text).width);
+      const { box } = layout;
+
+      ctx.save();
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.35)';
+      ctx.shadowBlur = Math.round(4 * scale);
+      ctx.shadowOffsetY = Math.round(2 * scale);
+      ctx.beginPath();
+      drawRoundRect(ctx, box.x, box.y, box.width, box.height, layout.radius);
+      ctx.fillStyle = colorDef.badgeBg;
+      ctx.fill();
+      ctx.restore();
+
+      ctx.fillStyle = colorDef.badgeText;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      for (const line of layout.lines) {
+        ctx.fillText(line.text, line.x, line.y);
+      }
       break;
     }
   }
 
   ctx.restore();
+}
+
+/**
+ * Clamps a crop rectangle to the image bounds; a missing or degenerate crop selects the full image.
+ */
+export function clampCrop(
+  crop: Frame['crop'],
+  width: number,
+  height: number
+): { x: number; y: number; width: number; height: number } {
+  if (!crop) return { x: 0, y: 0, width, height };
+  const x = Math.max(0, Math.min(width, Math.round(crop.x)));
+  const y = Math.max(0, Math.min(height, Math.round(crop.y)));
+  const right = Math.max(x, Math.min(width, Math.round(crop.x + crop.width)));
+  const bottom = Math.max(y, Math.min(height, Math.round(crop.y + crop.height)));
+  if (right - x < 1 || bottom - y < 1) return { x: 0, y: 0, width, height };
+  return { x, y, width: right - x, height: bottom - y };
 }
 
 /**
@@ -471,11 +539,19 @@ export async function renderCompositeCanvas(
     }
   }
 
+  const backend = exportOptions.backend ?? browserBackend;
   const width = baseImage.naturalWidth;
   const height = baseImage.naturalHeight;
   const scale = exportOptions.scale ?? computeResolutionScale(width, height);
 
-  const canvas = createCanvas(width, height);
+  // Output region: crop (clamped to the image) plus padding on every side
+  const frame = exportOptions.frame;
+  const crop = clampCrop(frame?.crop, width, height);
+  const padding = Math.max(0, frame?.padding ?? 0);
+  const outWidth = crop.width + padding * 2;
+  const outHeight = crop.height + padding * 2;
+
+  const canvas = backend.createCanvas(outWidth, outHeight);
   const ctx = canvas.getContext('2d');
   if (!ctx) {
     throw new Error('Failed to get 2D rendering context for composite canvas');
@@ -485,14 +561,28 @@ export async function renderCompositeCanvas(
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
 
-  if (exportOptions.backgroundColor) {
-    ctx.fillStyle = exportOptions.backgroundColor;
-    ctx.fillRect(0, 0, width, height);
+  const background = frame?.background ?? exportOptions.backgroundColor;
+  if (background) {
+    ctx.fillStyle = background;
+    ctx.fillRect(0, 0, outWidth, outHeight);
+  }
+
+  // Without a frame the call sequence is identical to an unframed 1:1 export
+  const isFramed = padding > 0 || crop.x !== 0 || crop.y !== 0 || crop.width !== width || crop.height !== height;
+  if (isFramed) {
+    // Everything below draws in natural image coordinates
+    ctx.translate(padding - crop.x, padding - crop.y);
+
+    // Image-derived layers (base, blur, spotlight, overlays) stay inside the crop region
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(crop.x, crop.y, crop.width, crop.height);
+    ctx.clip();
   }
 
   // 1. Draw Base Image at exact natural coordinates [0, 0, W, H]
   if (baseImage.src) {
-    const imgElement = await loadImageElement(baseImage.src);
+    const imgElement = await backend.loadImage(baseImage.src);
     ctx.drawImage(imgElement, 0, 0, width, height);
 
     // 1.2 Destructive Gaussian Blur Baking
@@ -507,7 +597,7 @@ export async function renderCompositeCanvas(
         ctx.filter = 'blur(12px)';
         ctx.drawImage(imgElement, 0, 0, width, height);
       } else {
-        bakeBlurFallback(ctx, imgElement, geo.x, geo.y, geo.width, geo.height);
+        bakeBlurFallback(ctx, imgElement, geo.x, geo.y, geo.width, geo.height, backend);
       }
       ctx.restore();
     }
@@ -516,7 +606,7 @@ export async function renderCompositeCanvas(
   // 1.5 Additive Highlight Cutout
   const highlightAnnotations = annotations.filter((ann) => ann.geometry.type === 'highlight');
   if (highlightAnnotations.length > 0) {
-    const offscreenCanvas = createCanvas(width, height);
+    const offscreenCanvas = backend.createCanvas(width, height);
     const offscreenCtx = offscreenCanvas.getContext('2d');
     if (offscreenCtx) {
       offscreenCtx.imageSmoothingEnabled = true;
@@ -544,15 +634,16 @@ export async function renderCompositeCanvas(
     for (const overlay of overlays) {
       if (overlay.src) {
         try {
-          const overlayImg = await loadImageElement(overlay.src);
+          const overlayImg = await backend.loadImage(overlay.src);
           ctx.save();
           if (typeof overlay.opacity === 'number') {
             ctx.globalAlpha = Math.max(0, Math.min(1, overlay.opacity));
           }
           const dx = overlay.x ?? 0;
           const dy = overlay.y ?? 0;
-          const dw = overlay.width ?? overlay.naturalWidth ?? overlayImg.naturalWidth;
-          const dh = overlay.height ?? overlay.naturalHeight ?? overlayImg.naturalHeight;
+          const natural = overlayImg as { naturalWidth?: number; naturalHeight?: number; width?: number; height?: number };
+          const dw = overlay.width ?? overlay.naturalWidth ?? natural.naturalWidth ?? natural.width ?? 0;
+          const dh = overlay.height ?? overlay.naturalHeight ?? natural.naturalHeight ?? natural.height ?? 0;
           ctx.drawImage(overlayImg, dx, dy, dw, dh);
           ctx.restore();
         } catch (err) {
@@ -561,6 +652,8 @@ export async function renderCompositeCanvas(
       }
     }
   }
+
+  if (isFramed) ctx.restore();
 
   // 3. Draw Vector Annotations in sequence order
   const sortedAnnotations = [...annotations].sort((a, b) => a.index - b.index);

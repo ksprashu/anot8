@@ -54,15 +54,15 @@ export function generateUniqueId(): string {
 /**
  * Determines whether a given geometry type is an annotatable callout that receives
  * sequential 1..N badge numbering and notes.
- * Visual effect shapes (highlight, blur) are unnumbered and return false.
+ * Visual effect shapes (highlight, blur) and text labels are unnumbered and return false.
  */
 export function isAnnotatableGeometry(geometry: AnnotationGeometry): boolean {
-  return geometry.type !== 'highlight' && geometry.type !== 'blur';
+  return geometry.type !== 'highlight' && geometry.type !== 'blur' && geometry.type !== 'text';
 }
 
 /**
  * Pure function enforcing the continuous 1..N re-indexing invariant for annotatable callouts.
- * Visual effect shapes (highlight, blur) are unnumbered (index: 0) and do not consume sequence numbers.
+ * Visual effect shapes (highlight, blur) and text labels are unnumbered (index: 0) and do not consume sequence numbers.
  * Preserves object references if index hasn't changed for fast React memoization.
  */
 export function reindexAnnotations(annotations: Annotation[]): Annotation[] {
@@ -174,6 +174,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         ...state,
         image: action.payload,
         overlays: [],
+        frame: undefined,
         // Reset annotations if new image is loaded (0 ghost annotations)
         annotations: [],
         selectedAnnotationId: null,
@@ -186,6 +187,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         ...state,
         image: null,
         overlays: [],
+        frame: undefined,
         annotations: [],
         selectedAnnotationId: null,
         hoveredAnnotationId: null,
@@ -202,6 +204,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         ...state,
         image: nextImage,
         overlays: [],
+        frame: undefined,
         annotations: [], // Purge all annotations (0 ghost annotations)
         selectedAnnotationId: null,
         hoveredAnnotationId: null,
@@ -267,6 +270,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
           color: action.payload.style?.color ?? state.activeColor,
           strokeWidth: action.payload.style?.strokeWidth ?? state.activeStrokeWidth,
           fillOpacity: action.payload.style?.fillOpacity ?? state.activeFillOpacity,
+          ...(action.payload.style?.showBadge !== undefined ? { showBadge: action.payload.style.showBadge } : {}),
         },
         note: action.payload.note ?? '',
         createdAt: now,
@@ -394,6 +398,24 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         annotations: [],
         selectedAnnotationId: null,
         hoveredAnnotationId: null,
+      };
+    }
+
+    case 'SET_ANNOTATIONS': {
+      const annotations = reindexAnnotations(action.payload);
+      const keep = (id: string | null) => (id && annotations.some((a) => a.id === id) ? id : null);
+      return {
+        ...state,
+        annotations,
+        selectedAnnotationId: keep(state.selectedAnnotationId),
+        hoveredAnnotationId: keep(state.hoveredAnnotationId),
+      };
+    }
+
+    case 'SET_FRAME': {
+      return {
+        ...state,
+        frame: action.payload ?? undefined,
       };
     }
 

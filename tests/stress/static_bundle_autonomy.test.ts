@@ -92,6 +92,8 @@ describe('Static Bundle & Offline Autonomy', () => {
 
         for (const entry of entries) {
           const fullPath = path.join(dir, entry.name);
+          // src/core/node is the headless CLI/MCP backend (fetches only user-supplied image URLs); never bundled into the app
+          if (entry.isDirectory() && fullPath === path.join(srcDir, 'core', 'node')) continue;
           if (entry.isDirectory()) {
             violations = violations.concat(scanDirForEgress(fullPath));
           } else if (entry.isFile() && (entry.name.endsWith('.ts') || entry.name.endsWith('.tsx'))) {

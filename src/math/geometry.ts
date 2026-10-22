@@ -7,6 +7,7 @@ import {
   Annotation,
 } from '../types';
 import { type PinDimensions, getPinDimensions } from './badges';
+import { layoutTextLabel } from './text';
 
 export type { PinDimensions };
 export { getPinDimensions };
@@ -223,6 +224,8 @@ export function getGeometryBoundingBox(geometry: AnnotationGeometry, scale: numb
     }
     case 'pin':
       return getPinBoundingBox(geometry, scale);
+    case 'text':
+      return layoutTextLabel(geometry).box;
   }
 }
 
@@ -272,6 +275,9 @@ export function getResizeHandlePositions(geometry: AnnotationGeometry): ResizeHa
     case 'pin': {
       return [{ id: 'pin', x: geometry.x, y: geometry.y, cursor: 'move' }];
     }
+    case 'text':
+      // Text labels are move-only
+      return [];
   }
 }
 
@@ -348,6 +354,15 @@ export function hitTestAnnotation(
         { x: geom.x, y: headCenterY }
       );
       return distHead <= headRadius + tolerance || distAnchor <= tolerance || distStem <= tolerance;
+    }
+    case 'text': {
+      const { x, y, width, height } = layoutTextLabel(geom).box;
+      return (
+        point.x >= x - tolerance &&
+        point.x <= x + width + tolerance &&
+        point.y >= y - tolerance &&
+        point.y <= y + height + tolerance
+      );
     }
   }
 }
@@ -487,6 +502,9 @@ export function applyHandleResize(
         y: currentPoint.y,
       };
     }
+
+    case 'text':
+      return initialGeometry;
   }
 }
 
@@ -522,6 +540,7 @@ export function translateGeometry(
         endY: geometry.endY + deltaY,
       };
     case 'pin':
+    case 'text':
       return {
         ...geometry,
         x: geometry.x + deltaX,

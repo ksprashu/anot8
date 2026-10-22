@@ -7,8 +7,12 @@ export type ToolType = 'select' | 'pan' | 'box' | 'ellipse' | 'arrow' | 'pin' | 
 
 export type PresetColor = 'red' | 'amber' | 'green' | 'cyan' | 'purple';
 
+export type HexColor = `#${string}`; // #RGB or #RRGGBB
+
+export type AnnotationColor = PresetColor | HexColor;
+
 export interface ColorDefinition {
-  id: PresetColor;
+  id: AnnotationColor;
   name: string;
   hex: string;
   stroke: string;
@@ -71,18 +75,29 @@ export interface PinGeometry {
   y: number; // Pin anchor tip Y in natural image pixels
 }
 
+export interface TextGeometry {
+  type: 'text';
+  x: number; // Label anchor X in natural image pixels (left, center, or right edge per align)
+  y: number; // Label top edge Y in natural image pixels
+  text: string; // Label text; '\n' starts a new line
+  fontSize: number; // In natural image pixels
+  align?: 'left' | 'center' | 'right'; // Default 'left'
+}
+
 export type AnnotationGeometry =
   | BoxGeometry
   | HighlightGeometry
   | BlurGeometry
   | EllipseGeometry
   | ArrowGeometry
-  | PinGeometry;
+  | PinGeometry
+  | TextGeometry;
 
 export interface AnnotationStyle {
-  color: PresetColor;
+  color: AnnotationColor;
   strokeWidth: number; // In natural image pixels (e.g. 2, 3, 4, 6, 8)
   fillOpacity: number; // 0.0 (transparent) to 1.0 (solid)
+  showBadge?: boolean; // Draw the numbered badge (default true); the sequence number is kept either way
 }
 
 export interface Annotation {
@@ -118,6 +133,22 @@ export interface ImageOverlay {
   fileSize?: number; // Size in bytes
 }
 
+export interface Rect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+/**
+ * Export framing applied on top of the base image: crop to a region, then pad with a background.
+ */
+export interface Frame {
+  crop?: Rect; // In natural image pixels (default: full image)
+  padding?: number; // Pixels added on every side of the cropped region (default 0)
+  background?: string; // CSS color for padding and transparent areas (default transparent)
+}
+
 export interface ViewportState {
   zoom: number; // Scale factor (e.g., 1.0 = 100%, 0.1 to 10.0)
   panX: number; // Viewport horizontal translation in CSS pixels
@@ -128,6 +159,7 @@ export interface AppState {
   image: BaseImage | null;
   overlays: ImageOverlay[];
   annotations: Annotation[];
+  frame?: Frame;
   selectedAnnotationId: string | null;
   hoveredAnnotationId: string | null;
   activeTool: ToolType;
@@ -196,6 +228,8 @@ export type AppAction =
         | { sourceIndex: number; destinationIndex: number };
     }
   | { type: 'CLEAR_ALL_ANNOTATIONS' }
+  | { type: 'SET_ANNOTATIONS'; payload: Annotation[] }
+  | { type: 'SET_FRAME'; payload: Frame | null }
   | { type: 'SELECT_ANNOTATION'; payload: string | null }
   | { type: 'SET_SELECTED_ANNOTATION'; payload: string | null }
   | { type: 'HOVER_ANNOTATION'; payload: string | null }
