@@ -127,7 +127,7 @@ export const AppContent: React.FC = () => {
               data-testid="app-brand-title"
               className="font-bold text-base sm:text-lg tracking-tight text-slate-900 dark:text-white"
             >
-              Annot8
+              Anot8
             </span>
             <span
               data-testid="app-brand-badge"

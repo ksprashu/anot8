@@ -34,14 +34,14 @@ describe('PwaUpdatePrompt', () => {
 
   it('stays silent while no update is waiting', () => {
     renderPrompt();
-    expect(screen.queryByText(/new version of Annot8/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/new version of Anot8/)).not.toBeInTheDocument();
   });
 
   it('offers a persistent reload toast and only updates when the user accepts', async () => {
     pwa.needRefresh = true;
     renderPrompt();
 
-    expect(screen.getByText('A new version of Annot8 is available')).toBeInTheDocument();
+    expect(screen.getByText('A new version of Anot8 is available')).toBeInTheDocument();
     expect(pwa.updateServiceWorker).not.toHaveBeenCalled();
 
     await userEvent.setup().click(screen.getByTestId('toast-action-btn'));

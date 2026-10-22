@@ -14,8 +14,8 @@ export default defineConfig({
       injectRegister: false,
       manifest: {
         id: './',
-        name: 'Annot8 — Screenshot Annotation',
-        short_name: 'Annot8',
+        name: 'Anot8 — Screenshot Annotation',
+        short_name: 'Anot8',
         description: 'Annotate screenshots with numbered callouts and markdown notes, then copy both in one go.',
         start_url: './',
         scope: './',

@@ -1,5 +1,5 @@
 /**
- * Local stdio MCP server for Annot8. It runs only as a subprocess of the agent: no network listener.
+ * Local stdio MCP server for Anot8. It runs only as a subprocess of the agent: no network listener.
  */
 import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -13,8 +13,8 @@ import { downscalePng, inspectImage, renderSpec } from '../src/core/node/render'
 /** Long side of the preview returned to the model; larger images are downscaled by vision models anyway. */
 const PREVIEW_MAX_SIDE = 1568;
 
-const GUIDE = `Annot8 specs describe one screenshot plus annotations, in the image's natural pixels.
-Workflow: annot8_inspect_image → write a spec → annot8_render (look at the preview) → annot8_apply_ops to adjust → render again.
+const GUIDE = `Anot8 specs describe one screenshot plus annotations, in the image's natural pixels.
+Workflow: anot8_inspect_image → write a spec → anot8_render (look at the preview) → anot8_apply_ops to adjust → render again.
 - Coordinates: pixels, or percentage strings ("25%") of image width (x, width) / height (y, height).
 - Points (arrow from/to, pin at, text at): [x, y], "@id" or "@id.<center|top|bottom|left|right|top-left|top-right|bottom-left|bottom-right>", or { "anchor": "@id.right", "dx": 20, "dy": 0 }.
 - Give annotations ids so arrows/pins/labels can anchor to them and ops can target them; anchors stay live when the target moves.
@@ -24,7 +24,7 @@ Workflow: annot8_inspect_image → write a spec → annot8_render (look at the p
 - Relative image paths resolve against the spec file's directory (or baseDir).`;
 
 const specInput = {
-  spec: z.unknown().optional().describe('Annot8 spec object (see annot8_schema)'),
+  spec: z.unknown().optional().describe('Anot8 spec object (see anot8_schema)'),
   specPath: z.string().optional().describe('Path to a spec JSON file; used when "spec" is omitted'),
   baseDir: z
     .string()
@@ -74,13 +74,13 @@ function tool<A>(handler: (args: A) => Promise<CallToolResult>) {
 }
 
 export function createMcpServer(): McpServer {
-  const server = new McpServer({ name: 'annot8', version: '1.0.0' }, { instructions: GUIDE });
+  const server = new McpServer({ name: 'anot8', version: '1.0.0' }, { instructions: GUIDE });
 
   server.registerTool(
-    'annot8_schema',
+    'anot8_schema',
     {
-      title: 'Annot8 spec schema',
-      description: 'Returns a usage guide plus the JSON Schemas for Annot8 specs and edit ops. Call this first.',
+      title: 'Anot8 spec schema',
+      description: 'Returns a usage guide plus the JSON Schemas for Anot8 specs and edit ops. Call this first.',
       inputSchema: {},
     },
     tool(async () =>
@@ -89,7 +89,7 @@ export function createMcpServer(): McpServer {
   );
 
   server.registerTool(
-    'annot8_inspect_image',
+    'anot8_inspect_image',
     {
       title: 'Inspect image',
       description: 'Returns the natural width and height of an image (path, http(s) URL, or data URL).',
@@ -104,7 +104,7 @@ export function createMcpServer(): McpServer {
   );
 
   server.registerTool(
-    'annot8_validate',
+    'anot8_validate',
     {
       title: 'Validate spec',
       description: 'Checks a spec and returns path-addressed issues, e.g. { path: "annotations[2].to", message }.',
@@ -124,7 +124,7 @@ export function createMcpServer(): McpServer {
   );
 
   server.registerTool(
-    'annot8_apply_ops',
+    'anot8_apply_ops',
     {
       title: 'Apply edit ops',
       description:
@@ -132,7 +132,7 @@ export function createMcpServer(): McpServer {
         'With specPath and write=true the file is updated in place.',
       inputSchema: {
         ...specInput,
-        ops: z.array(z.unknown()).describe('Edit ops; see opsSchema from annot8_schema'),
+        ops: z.array(z.unknown()).describe('Edit ops; see opsSchema from anot8_schema'),
         write: z.boolean().optional().describe('Write the result back to specPath (or to "output")'),
         output: z.string().optional().describe('Write the result to this path instead of specPath'),
       },
@@ -151,7 +151,7 @@ export function createMcpServer(): McpServer {
   );
 
   server.registerTool(
-    'annot8_render',
+    'anot8_render',
     {
       title: 'Render spec',
       description:

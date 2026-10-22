@@ -3,8 +3,9 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 export type ThemeMode = 'dark' | 'light' | 'system';
 export type ResolvedTheme = 'dark' | 'light';
 
-export const THEME_STORAGE_KEY = 'annot8_theme';
-export const LEGACY_THEME_STORAGE_KEY = 'anotato_theme';
+export const THEME_STORAGE_KEY = 'anot8_theme';
+export const LEGACY_THEME_STORAGE_KEY = 'annot8_theme';
+export const OLDEST_THEME_STORAGE_KEY = 'anotato_theme';
 
 export interface ThemeContextValue {
   theme: ThemeMode;
@@ -19,12 +20,15 @@ export function getStoredTheme(defaultTheme: ThemeMode = 'system'): ThemeMode {
     return defaultTheme;
   }
   try {
-    const stored = window.localStorage.getItem(THEME_STORAGE_KEY) || window.localStorage.getItem(LEGACY_THEME_STORAGE_KEY);
+    const stored =
+      window.localStorage.getItem(THEME_STORAGE_KEY) ||
+      window.localStorage.getItem(LEGACY_THEME_STORAGE_KEY) ||
+      window.localStorage.getItem(OLDEST_THEME_STORAGE_KEY);
     if (stored === 'dark' || stored === 'light' || stored === 'system') {
       return stored;
     }
   } catch (err) {
-    console.warn('Unable to access localStorage for annot8_theme:', err);
+    console.warn('Unable to access localStorage for anot8_theme:', err);
   }
   return defaultTheme;
 }
@@ -34,7 +38,7 @@ export function setStoredTheme(theme: ThemeMode): void {
   try {
     window.localStorage.setItem(THEME_STORAGE_KEY, theme);
   } catch (err) {
-    console.warn('Unable to save annot8_theme to localStorage:', err);
+    console.warn('Unable to save anot8_theme to localStorage:', err);
   }
 }
 

@@ -36,5 +36,5 @@ Before submitting this PR, please confirm that you have completed the following 
 
 <!--
 ⚠️ NOTICE:
-Annot8 is an independent, personal open-source project created and maintained by Prashanth Subrahmanyam. It is not an official Google project or product, and is not supported or endorsed by Google LLC. Reviews are conducted on a personal, best-effort basis with no guaranteed SLA.
+Anot8 is an independent, personal open-source project created and maintained by Prashanth Subrahmanyam. It is not an official Google project or product, and is not supported or endorsed by Google LLC. Reviews are conducted on a personal, best-effort basis with no guaranteed SLA.
 -->

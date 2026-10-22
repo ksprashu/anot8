@@ -1,5 +1,5 @@
 /**
- * Edit operations on an Annot8 spec. Ops edit the spec itself (not compiled pixels),
+ * Edit operations on an Anot8 spec. Ops edit the spec itself (not compiled pixels),
  * so anchors such as "@login.right" stay live: moving "login" moves everything anchored to it.
  */
 import { z } from 'zod';

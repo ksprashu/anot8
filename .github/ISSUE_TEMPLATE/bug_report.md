@@ -1,6 +1,6 @@
 ---
 name: 🐛 Bug Report
-about: Create a report to help reproduce and fix a bug in Annot8
+about: Create a report to help reproduce and fix a bug in Anot8
 title: '[BUG] <Short description of the issue>'
 labels: ['bug', 'triage']
 assignees: ''
@@ -8,7 +8,7 @@ assignees: ''
 
 <!--
 ⚠️ IMPORTANT NOTICE:
-Annot8 is an independent, personal open-source project created and maintained by Prashanth Subrahmanyam. It is NOT an official Google project or product, and is not supported, certified, or endorsed by Google LLC in any capacity.
+Anot8 is an independent, personal open-source project created and maintained by Prashanth Subrahmanyam. It is NOT an official Google project or product, and is not supported, certified, or endorsed by Google LLC in any capacity.
 
 This project is maintained on a personal, best-effort basis during spare time. There is NO Service Level Agreement (SLA), guaranteed response time, or official technical support.
 -->
@@ -32,7 +32,7 @@ This project is maintained on a personal, best-effort basis during spare time. T
 - **OS**: [e.g. macOS Sequoia 15.3, Windows 11, Ubuntu 24.04]
 - **Browser**: [e.g. Chrome 133, Firefox 135, Safari 18.3, Edge 133]
 - **Display**: [e.g. Retina / High-DPI (2x scale), 4K, standard 1080p]
-- **Annot8 Version / Commit**: [e.g. v1.0.0 or commit hash]
+- **Anot8 Version / Commit**: [e.g. v1.0.0 or commit hash]
 
 ### 📸 Screenshots / Screen Recording
 <!-- If applicable, add screenshots or GIF screen recordings to help explain the problem. -->

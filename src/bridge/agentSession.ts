@@ -1,5 +1,5 @@
 /**
- * Spec-level editing session behind window.annot8. It keeps the last spec it loaded so anchors stay live
+ * Spec-level editing session behind window.anot8. It keeps the last spec it loaded so anchors stay live
  * across apply() calls; once a person edits the canvas, it falls back to a pixel spec derived from state.
  */
 import { AppAction, AppState, BaseImage } from '../types';
@@ -180,7 +180,7 @@ export function encodeSpecHash(spec: unknown): string {
   return `#spec=${btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')}`;
 }
 
-/** Heuristic for dropped/pasted files and text: does this look like an Annot8 spec? */
+/** Heuristic for dropped/pasted files and text: does this look like an Anot8 spec? */
 export function looksLikeSpec(value: unknown): boolean {
   return (
     typeof value === 'object' &&

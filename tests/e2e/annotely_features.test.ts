@@ -1,5 +1,5 @@
 /**
- * Anotato Annotely-Inspired Features Master E2E Test Suite
+ * Anot8 Annotely-Inspired Features Master E2E Test Suite
  * 
  * Comprehensive, requirement-driven, opaque-box test suite covering:
  * - R1: Polished Thicker Arrow Tool (geometry, contrast casing/shadows, tail badge anchor, transform handles, canvas export)
@@ -1201,7 +1201,7 @@ describe('Tier 4: Real-World Workload Scenarios', () => {
       payload: {
         geometry: { type: 'arrow', startX: 1500, startY: 1800, endX: 1920, endY: 1800 },
         style: { color: 'amber', strokeWidth: 8, fillOpacity: 1.0 },
-        note: 'Primary checkout button needs potato gold contrast',
+        note: 'Primary checkout button needs amber gold contrast',
       },
     });
 

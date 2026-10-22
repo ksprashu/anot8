@@ -14,7 +14,7 @@ const UPDATE = process.env.UPDATE_GOLDEN === '1';
 /** Text uses system fonts, so glyph rasterization varies slightly between machines. */
 const MAX_DIFF_RATIO = 0.02;
 
-const specs = readdirSync(SPECS_DIR).filter((f) => f.endsWith('.annot8.json'));
+const specs = readdirSync(SPECS_DIR).filter((f) => f.endsWith('.anot8.json'));
 
 describe('golden renders', () => {
   it('has fixture specs', () => {
@@ -24,7 +24,7 @@ describe('golden renders', () => {
   it.each(specs)('%s matches its golden image', async (file) => {
     const spec = JSON.parse(readFileSync(path.join(SPECS_DIR, file), 'utf8'));
     const { png } = await renderSpec(spec, { baseDir: SPECS_DIR });
-    const goldenPath = path.join(GOLDEN_DIR, file.replace(/\.annot8\.json$/, '.png'));
+    const goldenPath = path.join(GOLDEN_DIR, file.replace(/\.anot8\.json$/, '.png'));
 
     if (UPDATE || !existsSync(goldenPath)) {
       if (!UPDATE) throw new Error(`Missing golden ${goldenPath}; run with UPDATE_GOLDEN=1 to create it`);

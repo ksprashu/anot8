@@ -1,6 +1,6 @@
 ---
 name: 💡 Feature Request / Proposal
-about: Suggest an idea or enhancement for Annot8
+about: Suggest an idea or enhancement for Anot8
 title: '[FEAT] <Short description of proposed feature>'
 labels: ['enhancement']
 assignees: ''
@@ -8,7 +8,7 @@ assignees: ''
 
 <!--
 ⚠️ IMPORTANT NOTICE:
-Annot8 is an independent, personal open-source project created and maintained by Prashanth Subrahmanyam. It is NOT an official Google project or product, and is not supported, certified, or endorsed by Google LLC in any capacity.
+Anot8 is an independent, personal open-source project created and maintained by Prashanth Subrahmanyam. It is NOT an official Google project or product, and is not supported, certified, or endorsed by Google LLC in any capacity.
 
 This project is maintained on a personal, best-effort basis during spare time. There is NO Service Level Agreement (SLA), guaranteed response time, or official technical support.
 -->

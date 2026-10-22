@@ -7,7 +7,7 @@ describe('Milestone 1 Scaffolding & Toolchain Smoke Tests', () => {
   it('loads preset colors with all 5 high-contrast themes', () => {
     expect(COLOR_KEYS).toHaveLength(5);
     expect(COLOR_KEYS).toEqual(['red', 'amber', 'green', 'cyan', 'purple']);
-    expect(PRESET_COLORS.amber.name).toBe('Potato Gold');
+    expect(PRESET_COLORS.amber.name).toBe('Amber Gold');
     expect(PRESET_COLORS.red.stroke).toBe('#EF4444');
     expect(PRESET_COLORS.green.stroke).toBe('#10B981');
     expect(PRESET_COLORS.cyan.stroke).toBe('#06B6D4');

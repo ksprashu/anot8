@@ -1,5 +1,5 @@
 /**
- * Compiles an Annot8 spec into renderer-ready annotations, and converts editor state back into a spec.
+ * Compiles an Anot8 spec into renderer-ready annotations, and converts editor state back into a spec.
  */
 import { Annotation, AnnotationColor, AnnotationGeometry, BaseImage, Frame, Point } from '../types';
 import {

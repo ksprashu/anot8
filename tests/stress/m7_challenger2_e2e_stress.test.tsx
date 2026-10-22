@@ -571,13 +571,13 @@ describe('Milestone 7: Challenger 2 — Master End-to-End User Workflows & Integ
       });
 
       expect(document.documentElement.classList.contains('dark')).toBe(false);
-      expect(localStorage.getItem('annot8_theme')).toBe('light');
+      expect(localStorage.getItem('anot8_theme')).toBe('light');
 
       // Toggle back to dark via Cmd+D
       fireEvent.keyDown(window, { key: 'd', metaKey: true });
 
       expect(document.documentElement.classList.contains('dark')).toBe(true);
-      expect(localStorage.getItem('annot8_theme')).toBe('dark');
+      expect(localStorage.getItem('anot8_theme')).toBe('dark');
     });
   });
 

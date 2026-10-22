@@ -1,12 +1,12 @@
-# Contributing to Annot8
+# Contributing to Anot8
 
-Thank you for your interest in contributing to Annot8! We welcome community contributions, bug reports, and enhancements to help make developer screenshot annotations and split-view note-taking faster, cleaner, and more productive.
+Thank you for your interest in contributing to Anot8! We welcome community contributions, bug reports, and enhancements to help make developer screenshot annotations and split-view note-taking faster, cleaner, and more productive.
 
 ---
 
 > [!IMPORTANT]
 > ### ⚠️ Project Scope & Support Disclaimer
-> **Annot8 is an independent, personal open-source project created and maintained by Prashanth Subrahmanyam. It is not an official Google project or product, and is not supported, certified, or endorsed by Google LLC in any capacity.**
+> **Anot8 is an independent, personal open-source project created and maintained by Prashanth Subrahmanyam. It is not an official Google project or product, and is not supported, certified, or endorsed by Google LLC in any capacity.**
 >
 > This project is maintained strictly on a personal, best-effort basis during spare time. **There is no Service Level Agreement (SLA), guaranteed response time, or official technical support.**
 >
@@ -45,8 +45,8 @@ We are committed to providing a friendly, safe, and welcoming environment for ev
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/ksprashu/anotato.git
-   cd anotato
+   git clone https://github.com/ksprashu/anot8.git
+   cd anot8
    ```
 
 2. **Install dependencies**:
@@ -71,7 +71,7 @@ We are committed to providing a friendly, safe, and welcoming environment for ev
 
 ## Architecture & Design Principles
 
-Annot8 is designed as a zero-backend, 100% client-side web application structured around a **5-Layer Hybrid Model**:
+Anot8 is designed as a zero-backend, 100% client-side web application structured around a **5-Layer Hybrid Model**:
 
 1. **Interactive Viewport Layer**:
    - Native unscaled base image container with hardware-accelerated CSS transforms for pan and zoom.
@@ -124,7 +124,7 @@ The CLI and MCP server (`cli/`) and the browser bridge (`src/bridge/`) are thin 
 
 ## Testing & Quality Assurance
 
-Annot8 enforces strict testing standards. Every pull request must pass all test suites.
+Anot8 enforces strict testing standards. Every pull request must pass all test suites.
 
 ### Running Tests
 
@@ -150,7 +150,7 @@ UPDATE_GOLDEN=1 npx vitest run --project node
 - **Unit Tests (`tests/unit/`)**: Coordinate math, geometry transforms, arrowheads, badge anchoring, reducer transitions, markdown serialization, and theme persistence.
 - **Component Tests (`tests/component/`)**: UI components, toolbars, color pickers, sidebar synchronization, markdown editor, and modals.
 - **Integration Tests (`tests/integration/`)**: Canvas export pipeline, offscreen rasterization, clipboard actions, and bidirectional hover states.
-- **Spec & Bridge Tests (`tests/unit/spec.test.ts`, `tests/unit/agentBridge.test.tsx`)**: Spec validation, percentage and anchor resolution, edit ops, round trips, and the `window.annot8` session.
+- **Spec & Bridge Tests (`tests/unit/spec.test.ts`, `tests/unit/agentBridge.test.tsx`)**: Spec validation, percentage and anchor resolution, edit ops, round trips, and the `window.anot8` session.
 - **Headless Tests (`tests/node/`)**: Golden image renders of `tests/fixtures/specs/*` compared with `tests/fixtures/golden/*` (pixelmatch, small tolerance for font differences), plus the built CLI and the MCP server over stdio.
 - **E2E & Stress Tests (`tests/e2e/`, `tests/stress/`)**: Multi-tier opaque-box scenarios, boundary conditions, rapid lifecycle oscillations, and large annotation datasets (100+ items).
 
@@ -161,7 +161,7 @@ UPDATE_GOLDEN=1 npx vitest run --project node
 We use a standard GitHub feature branch and Pull Request workflow:
 
 1. **Fork the Repository**:
-   Create your personal fork of `ksprashu/anotato`.
+   Create your personal fork of `ksprashu/anot8`.
 
 2. **Create a Topic Branch**:
    ```bash
@@ -205,4 +205,4 @@ Please keep in mind that this is a personal open-source project; issues and PRs 
 
 ## License Notice
 
-By contributing to Annot8, you agree that your contributions will be licensed under the [Apache License, Version 2.0](LICENSE).
+By contributing to Anot8, you agree that your contributions will be licensed under the [Apache License, Version 2.0](LICENSE).

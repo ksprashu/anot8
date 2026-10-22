@@ -1,11 +1,11 @@
 ---
 name: cloudflare-domain
-description: Inspect or change Annot8's Cloudflare DNS and redirect rules for ksprashu.dev (anot8 subdomain, ksprashu.dev/anot8 redirect). Use when the custom domain, DNS records, or URL redirects need checking or editing.
+description: Inspect or change Anot8's Cloudflare DNS and redirect rules for ksprashu.dev (anot8 subdomain, ksprashu.dev/anot8 redirect). Use when the custom domain, DNS records, or URL redirects need checking or editing.
 ---
 
-# Annot8 domain on Cloudflare
+# Anot8 domain on Cloudflare
 
-Annot8 is a static site on GitHub Pages (`.github/workflows/deploy-pages.yml`).
+Anot8 is a static site on GitHub Pages (`.github/workflows/deploy-pages.yml`).
 Cloudflare only provides DNS and edge redirects for `ksprashu.dev`; there are no
 Workers and nothing billable.
 
@@ -35,7 +35,7 @@ OAuth sign-in via `/mcp`). Use its `search` tool to find the endpoint, then `exe
 
 - Find the zone id: `GET /zones?name=ksprashu.dev`.
 - Redirect rules live in the zone's `http_request_dynamic_redirect` phase entrypoint
-  ruleset. Read it first and **append or update** only the Annot8 rule. A `PUT` on the
+  ruleset. Read it first and **append or update** only the Anot8 rule. A `PUT` on the
   entrypoint replaces every rule in the phase, so never send a partial list.
 - Do not toggle the proxy on the `anot8` record.
 

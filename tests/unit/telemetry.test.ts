@@ -9,7 +9,7 @@ import {
   setTelemetryEnabled,
 } from '../../src/analytics/telemetry';
 
-describe('Annot8 Custom Telemetry Module', () => {
+describe('Anot8 Custom Telemetry Module', () => {
   beforeEach(() => {
     clearEventLogForTesting();
     setTelemetryEnabled(true);

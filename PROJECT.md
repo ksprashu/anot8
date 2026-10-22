@@ -1,7 +1,7 @@
-# Project: Annot8 — Master Architecture & Feature Inventory
+# Project: Anot8 — Master Architecture & Feature Inventory
 
 ## Architecture
-Annot8 is a client-side screenshot annotation web application built with React, TypeScript, Vite, and Tailwind CSS.
+Anot8 is a client-side screenshot annotation web application built with React, TypeScript, Vite, and Tailwind CSS.
 It is built with a Layered Hybrid Architecture for ultra-fast 60 FPS viewport interaction and pixel-perfect 1:1 composite export:
 
 ### 1. State Management
@@ -38,8 +38,8 @@ It is built with a Layered Hybrid Architecture for ultra-fast 60 FPS viewport in
 - **Portable core**: `appReducer`, `src/math/*`, `markdownSerializer`, and `canvasExporter` have no React or DOM dependencies (ESLint-enforced). `canvasExporter` takes an injectable `RenderBackend { createCanvas, loadImage }`: `browserBackend` in the app, `createNodeBackend()` (`@napi-rs/canvas`) in `src/core/node/backend.ts`.
 - **Model additions**: hex colors via `resolveColor()` (`src/constants/colors.ts`), unnumbered `TextGeometry`, `AnnotationStyle.showBadge`, and `AppState.frame { crop?, padding?, background? }` applied at export. `SET_ANNOTATIONS` replaces the whole list and reindexes.
 - **Spec** (`src/spec/`): zod v4 schema with version 1, `image.source`, `frame`, `defaults`, and `annotations`. Coordinates can be pixels or percentages. Points can be anchors (`@id.position` or `{anchor, dx, dy}`). `compileSpec` resolves the spec to annotations; `toSpec` derives a pixel spec from state; `applyOps` edits at the spec level (add/update/delete/reorder/clear/setFrame), so anchors stay live. Errors are a `SpecError` with path-addressed issues.
-- **CLI / MCP** (`cli/annot8.ts`, `cli/mcp.ts`): `inspect`, `init`, `render`, `validate`, `apply`, `schema`, and `mcp` (stdio). Bundled by tsup to `dist-cli/annot8.js`. `annot8_render` returns the rendered PNG as MCP image content.
-- **Browser bridge** (`src/bridge/`): `window.annot8 = AgentSession { schema, getSpec, loadSpec, apply, render, markdown }`, plus `#spec=<base64url>` links, spec drop/paste, and a Save spec export button.
+- **CLI / MCP** (`cli/anot8.ts`, `cli/mcp.ts`): `inspect`, `init`, `render`, `validate`, `apply`, `schema`, and `mcp` (stdio). Bundled by tsup to `dist-cli/anot8.js`. `anot8_render` returns the rendered PNG as MCP image content.
+- **Browser bridge** (`src/bridge/`): `window.anot8 = AgentSession { schema, getSpec, loadSpec, apply, render, markdown }`, plus `#spec=<base64url>` links, spec drop/paste, and a Save spec export button.
 
 ---
 
@@ -192,5 +192,5 @@ It is built with a Layered Hybrid Architecture for ultra-fast 60 FPS viewport in
 - `src/math/text.ts`: Text label measurement and bounding boxes.
 - `src/spec/`: Spec schema, compiler, `toSpec`, and edit ops.
 - `src/core/node/`: Node render backend and `renderSpec`.
-- `src/bridge/`: `AgentSession` and the `AgentBridge` component (`window.annot8`).
-- `cli/`: `annot8` CLI and MCP server.
+- `src/bridge/`: `AgentSession` and the `AgentBridge` component (`window.anot8`).
+- `cli/`: `anot8` CLI and MCP server.

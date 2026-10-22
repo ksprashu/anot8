@@ -493,7 +493,7 @@ describe('Tier 5: Adversarial Coverage Hardening & Stress Matrix', () => {
       expect(sanitizeFileName('../../etc/passwd.png')).toBe('etc-passwd.png');
       expect(sanitizeFileName('test\0null\x1fbyte.png')).toBe('testnullbyte.png');
       expect(sanitizeFileName('   spaced_file.png   ')).toBe('spaced_file.png');
-      expect(sanitizeFileName('')).toMatch(/^annot8-export-\d+\.png$/);
+      expect(sanitizeFileName('')).toMatch(/^anot8-export-\d+\.png$/);
 
       const generated = generateExportFilename(mockBaseImage, 'png');
       expect(generated).toBe('adversarial-system-architecture-annotated.png');

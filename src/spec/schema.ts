@@ -1,5 +1,5 @@
 /**
- * Annot8 document spec (v1): a declarative JSON description of an annotated screenshot.
+ * Anot8 document spec (v1): a declarative JSON description of an annotated screenshot.
  * Agents write or edit a spec; the compiler turns it into Annotation[] in natural image pixels.
  */
 import { z } from 'zod';
@@ -155,7 +155,7 @@ export const DocumentSpecSchema = z
       .describe('Style applied to annotations that do not set their own'),
     annotations: z.array(AnnotationSpecSchema).describe('Drawn in order; numbered callouts get badges 1..N in this order'),
   })
-  .describe('Annot8 document: one screenshot plus its annotations');
+  .describe('Anot8 document: one screenshot plus its annotations');
 
 export type DocumentSpec = z.infer<typeof DocumentSpecSchema>;
 export type AnnotationSpec = z.infer<typeof AnnotationSpecSchema>;
@@ -171,7 +171,7 @@ export class SpecError extends Error {
   readonly issues: SpecIssue[];
 
   constructor(issues: SpecIssue[]) {
-    super(`Invalid Annot8 spec:\n${issues.map((i) => `  ${i.path || '(root)'}: ${i.message}`).join('\n')}`);
+    super(`Invalid Anot8 spec:\n${issues.map((i) => `  ${i.path || '(root)'}: ${i.message}`).join('\n')}`);
     this.name = 'SpecError';
     this.issues = issues;
   }

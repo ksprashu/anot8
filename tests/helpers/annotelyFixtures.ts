@@ -1,5 +1,5 @@
 /**
- * Anotato Annotely Features Test Fixtures, Contracts & Reference Oracles
+ * Anot8 Annotely Features Test Fixtures, Contracts & Reference Oracles
  * 
  * Authoritative models, reference implementations, and simulation harnesses
  * strictly adhering to PROJECT.md § Interface Contracts and ORIGINAL_REQUEST.md.

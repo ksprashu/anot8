@@ -1,6 +1,6 @@
 /**
- * Installs window.annot8 for agents driving the browser, and loads specs from a "#spec=" hash,
- * dropped .annot8.json files, or pasted spec JSON. Renders nothing.
+ * Installs window.anot8 for agents driving the browser, and loads specs from a "#spec=" hash,
+ * dropped .anot8.json files, or pasted spec JSON. Renders nothing.
  */
 import { useEffect, useRef } from 'react';
 import { flushSync } from 'react-dom';
@@ -11,7 +11,7 @@ import { AgentSession, decodeSpecHash, looksLikeSpec } from './agentSession';
 
 declare global {
   interface Window {
-    annot8?: AgentSession;
+    anot8?: AgentSession;
   }
 }
 
@@ -37,18 +37,18 @@ export const AgentBridge: React.FC = () => {
       getState: () => stateRef.current,
       dispatch: (action) => flushSync(() => dispatch(action)),
     });
-    window.annot8 = session;
+    window.anot8 = session;
 
     const loadFromUser = async (spec: unknown, origin: string) => {
       try {
         const { annotations } = await session.loadSpec(spec);
-        toastRef.current.success('Loaded Annot8 spec', `${annotations.length} annotations from ${origin}`);
+        toastRef.current.success('Loaded Anot8 spec', `${annotations.length} annotations from ${origin}`);
       } catch (err) {
         const detail =
           err instanceof SpecError
             ? err.issues.slice(0, 3).map((i) => `${i.path || '(root)'}: ${i.message}`).join('\n')
             : (err as Error).message;
-        toastRef.current.error('Could not load Annot8 spec', detail);
+        toastRef.current.error('Could not load Anot8 spec', detail);
       }
     };
 
@@ -95,7 +95,7 @@ export const AgentBridge: React.FC = () => {
     return () => {
       window.removeEventListener('drop', onDrop, true);
       window.removeEventListener('paste', onPaste, true);
-      if (window.annot8 === session) delete window.annot8;
+      if (window.anot8 === session) delete window.anot8;
     };
   }, [dispatch]);
 

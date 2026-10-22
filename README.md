@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="docs/images/banner.png" alt="Annot8 - Screenshot Annotation & Note-Taking for Developers" width="100%" style="border-radius: 12px; margin-bottom: 20px;" />
+<img src="docs/images/banner.png" alt="Anot8 - Screenshot Annotation & Note-Taking for Developers" width="100%" style="border-radius: 12px; margin-bottom: 20px;" />
 
-# Annot8 📝⚡
+# Anot8 📝⚡
 
 **Screenshot Annotation & Split-View Markdown Note-Taking for Developers & Technical Writers**
 
@@ -21,7 +21,7 @@
 
 > [!IMPORTANT]
 > ### ⚠️ Mandatory Open-Source & Non-Affiliation Disclaimer
-> **Annot8 is an independent, personal open-source project created and maintained by Prashanth Subrahmanyam. It is not an official Google project or product, and is not supported, certified, or endorsed by Google LLC in any capacity. This software is provided strictly on an 'AS IS' BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied, including, without limitation, any warranties or conditions of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE. Use at your own risk.**
+> **Anot8 is an independent, personal open-source project created and maintained by Prashanth Subrahmanyam. It is not an official Google project or product, and is not supported, certified, or endorsed by Google LLC in any capacity. This software is provided strictly on an 'AS IS' BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied, including, without limitation, any warranties or conditions of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE. Use at your own risk.**
 
 ---
 
@@ -45,7 +45,7 @@
 
 Developers, technical writers, support engineers, and product teams constantly capture screenshots to document bugs, write architectural runbooks, and explain UI workflows. Existing tools are either bloated desktop apps, cloud platforms requiring accounts and uploads, or basic screenshot utilities that lack structured note synchronization.
 
-**Annot8** is built to solve this with a single high-efficiency web tool:
+**Anot8** is built to solve this with a single high-efficiency web tool:
 1. **Paste screenshot** (`Cmd+V` / `Ctrl+V`).
 2. **Draw vector callouts** (Boxes, Circles, Arrows, numbered Pins) that automatically receive sequential $1..N$ badges.
 3. **Write structured markdown notes** in the synchronized split-view sidebar.
@@ -93,20 +93,20 @@ Developers, technical writers, support engineers, and product teams constantly c
 - **Zero Network Egress**: Once loaded, operates completely offline with full client-side execution.
 
 ### 🤖 Parametric Editing for AI Agents
-- **Annot8 spec**: A JSON document format (`.annot8.json`) that describes the image, frame, and annotations, with percentage coordinates and anchors such as `"@submit.right"`.
+- **Anot8 spec**: A JSON document format (`.anot8.json`) that describes the image, frame, and annotations, with percentage coordinates and anchors such as `"@submit.right"`.
 - **Headless rendering**: The same Canvas2D exporter runs in Node via `@napi-rs/canvas`, so the CLI and MCP server produce the same PNG as the Export button.
-- **Local only**: A CLI, a stdio MCP server, and a `window.annot8` browser bridge. Nothing is hosted. See [Agent Usage](#-agent-usage-cli-mcp-browser).
+- **Local only**: A CLI, a stdio MCP server, and a `window.anot8` browser bridge. Nothing is hosted. See [Agent Usage](#-agent-usage-cli-mcp-browser).
 - **Round trip with people**: Save the current canvas as a spec, or drop or paste a spec onto the app to load it.
 
 ---
 
 ## 🏛️ System Architecture
 
-Annot8 is structured around a **5-Layer Hybrid Architecture** that cleanly separates interactive viewport rendering from high-resolution export rasterization:
+Anot8 is structured around a **5-Layer Hybrid Architecture** that cleanly separates interactive viewport rendering from high-resolution export rasterization:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                            Annot8 Application                               │
+│                             Anot8 Application                               │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │  Layer 1: Interactive Viewport Layer                                        │
 │  ┌───────────────────────────────┐   ┌───────────────────────────────────┐  │
@@ -149,10 +149,10 @@ The reducer, geometry math, markdown serializer, and Canvas2D exporter form a **
 
 | Module | Role |
 |---|---|
-| `src/spec/` | Zod schema for the Annot8 spec, `compileSpec` (percentages and anchors → annotations), `toSpec`, and edit `applyOps` |
+| `src/spec/` | Zod schema for the Anot8 spec, `compileSpec` (percentages and anchors → annotations), `toSpec`, and edit `applyOps` |
 | `src/core/node/` | Node render backend and `renderSpec` (PNG plus markdown) |
-| `cli/` | The `annot8` CLI and the stdio MCP server, bundled by tsup to `dist-cli/` |
-| `src/bridge/` | `window.annot8` session, `#spec=` links, and spec drop/paste in the app |
+| `cli/` | The `anot8` CLI and the stdio MCP server, bundled by tsup to `dist-cli/` |
+| `src/bridge/` | `window.anot8` session, `#spec=` links, and spec drop/paste in the app |
 
 ---
 
@@ -192,11 +192,11 @@ The reducer, geometry math, markdown serializer, and Canvas2D exporter form a **
 
 ## 💻 Install as an App
 
-Annot8 is a Progressive Web App. Installing it gives it its own window, a taskbar/Dock icon, and offline launch. Everything still runs locally in your browser engine.
+Anot8 is a Progressive Web App. Installing it gives it its own window, a taskbar/Dock icon, and offline launch. Everything still runs locally in your browser engine.
 
 | Platform | How to install |
 |---|---|
-| **Chrome / Edge (Windows, macOS, Linux)** | Click the install icon at the right of the address bar, or open the browser menu and choose **Install Annot8**. Then pin it to the taskbar or keep it in the Dock. |
+| **Chrome / Edge (Windows, macOS, Linux)** | Click the install icon at the right of the address bar, or open the browser menu and choose **Install Anot8**. Then pin it to the taskbar or keep it in the Dock. |
 | **Safari (macOS Sonoma or later)** | **File → Add to Dock**. |
 | **Safari (iOS / iPadOS)** | **Share → Add to Home Screen**. |
 
@@ -208,7 +208,7 @@ App icons are generated from `public/logo.svg` and `scripts/logo-maskable.svg` w
 
 ## 🤖 Agent Usage (CLI, MCP, Browser)
 
-AI agents and scripts can use Annot8 as a parametric editor. They describe annotations as a JSON spec, render it headlessly, look at the result, and adjust with edit ops. Everything runs locally: a CLI, a stdio MCP server that runs as a subprocess of the agent, and a `window.annot8` bridge in the app.
+AI agents and scripts can use Anot8 as a parametric editor. They describe annotations as a JSON spec, render it headlessly, look at the result, and adjust with edit ops. Everything runs locally: a CLI, a stdio MCP server that runs as a subprocess of the agent, and a `window.anot8` bridge in the app.
 
 ```json
 {
@@ -224,8 +224,8 @@ AI agents and scripts can use Annot8 as a parametric editor. They describe annot
 
 ```bash
 npm run build:cli && npm link
-annot8 render shot.annot8.json -o out.png --md notes.md
-annot8 apply shot.annot8.json --ops '[{"op":"update","id":"submit","set":{"x":300}}]' --in-place
+anot8 render shot.anot8.json -o out.png --md notes.md
+anot8 apply shot.anot8.json --ops '[{"op":"update","id":"submit","set":{"x":300}}]' --in-place
 ```
 
 See **[docs/agent-usage.md](docs/agent-usage.md)** for the spec reference (anchors, percentages, hex colors, text labels, crop and padding), the edit ops, the MCP tools, and the browser bridge.
@@ -242,8 +242,8 @@ See **[docs/agent-usage.md](docs/agent-usage.md)** for the spec reference (ancho
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/ksprashu/anotato.git
-   cd anotato
+   git clone https://github.com/ksprashu/anot8.git
+   cd anot8
    ```
 
 2. **Install dependencies**:
@@ -255,7 +255,7 @@ See **[docs/agent-usage.md](docs/agent-usage.md)** for the spec reference (ancho
    ```bash
    npm run dev
    ```
-   Open `http://localhost:5173` to explore Annot8 with instant Vite Hot Module Replacement.
+   Open `http://localhost:5173` to explore Anot8 with instant Vite Hot Module Replacement.
 
 4. **Production build**:
    ```bash
@@ -272,7 +272,7 @@ See **[docs/agent-usage.md](docs/agent-usage.md)** for the spec reference (ancho
 
 ## 🧪 Testing & Quality Assurance
 
-Annot8 has an automated test matrix covering unit math, React components, integration pipelines, 4-tier opaque-box E2E scenarios, and headless agent surfaces. Vitest runs two projects: `dom` (jsdom, everything under `tests/` except `tests/node/`) and `node` (golden image renders, CLI, and MCP server over stdio).
+Anot8 has an automated test matrix covering unit math, React components, integration pipelines, 4-tier opaque-box E2E scenarios, and headless agent surfaces. Vitest runs two projects: `dom` (jsdom, everything under `tests/` except `tests/node/`) and `node` (golden image renders, CLI, and MCP server over stdio).
 
 ```bash
 # Run the complete test suite (84 files, 1498 tests)
@@ -307,7 +307,7 @@ npm run build:cli
 
 ## 🚀 Production Deployment
 
-Annot8 is a fully static, client-side app: once loaded, all image processing, annotation, and export runs in the browser with no backend.
+Anot8 is a fully static, client-side app: once loaded, all image processing, annotation, and export runs in the browser with no backend.
 
 It is deployed to **GitHub Pages** by [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml) on every push to `main`. The workflow typechecks, builds, runs the test suite, and publishes `dist/`. The site is served at the custom domain configured in the repository's Pages settings.
 
@@ -330,7 +330,7 @@ Please note that this is a personal open-source project maintained on a best-eff
 
 ## 📄 License
 
-Annot8 is open-source software licensed under the [Apache License, Version 2.0](LICENSE).
+Anot8 is open-source software licensed under the [Apache License, Version 2.0](LICENSE).
 
 ```
 Copyright 2026 Prashanth Subrahmanyam

@@ -12,7 +12,7 @@ export const PRESET_COLORS: Record<PresetColor, ColorDefinition> = {
   },
   amber: {
     id: 'amber',
-    name: 'Potato Gold',
+    name: 'Amber Gold',
     hex: '#F59E0B',
     stroke: '#F59E0B',
     fill: 'rgba(245, 158, 11, 0.18)',

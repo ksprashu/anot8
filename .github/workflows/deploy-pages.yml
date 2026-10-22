@@ -1,4 +1,4 @@
-name: Deploy Annot8 to GitHub Pages
+name: Deploy Anot8 to GitHub Pages
 
 on:
   push:

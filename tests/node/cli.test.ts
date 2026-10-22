@@ -1,5 +1,5 @@
 /**
- * End-to-end tests for the built CLI (dist-cli/annot8.js) and its stdio MCP server.
+ * End-to-end tests for the built CLI (dist-cli/anot8.js) and its stdio MCP server.
  */
 import { execFileSync, spawnSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -9,9 +9,9 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 
 const ROOT = path.resolve(__dirname, '../..');
-const CLI = path.join(ROOT, 'dist-cli/annot8.js');
+const CLI = path.join(ROOT, 'dist-cli/anot8.js');
 const FIXTURES = path.join(ROOT, 'tests/fixtures');
-const SHAPES = path.join(FIXTURES, 'specs/shapes.annot8.json');
+const SHAPES = path.join(FIXTURES, 'specs/shapes.anot8.json');
 const PNG_SIGNATURE = '89504e470d0a1a0a';
 
 function run(args: string[], input?: string) {
@@ -23,14 +23,14 @@ let tmp: string;
 
 beforeAll(() => {
   execFileSync('npx', ['tsup', '--silent'], { cwd: ROOT, stdio: 'ignore' });
-  tmp = mkdtempSync(path.join(tmpdir(), 'annot8-cli-'));
+  tmp = mkdtempSync(path.join(tmpdir(), 'anot8-cli-'));
 }, 60_000);
 
 afterAll(() => {
   rmSync(tmp, { recursive: true, force: true });
 });
 
-describe('annot8 CLI', () => {
+describe('anot8 CLI', () => {
   it('inspect prints image dimensions', () => {
     const { code, stdout } = run(['inspect', path.join(FIXTURES, 'screen.png')]);
     expect(code).toBe(0);
@@ -118,11 +118,11 @@ describe('annot8 CLI', () => {
   });
 });
 
-describe('annot8 MCP server', () => {
+describe('anot8 MCP server', () => {
   let client: Client;
 
   beforeAll(async () => {
-    client = new Client({ name: 'annot8-test', version: '0.0.0' });
+    client = new Client({ name: 'anot8-test', version: '0.0.0' });
     await client.connect(new StdioClientTransport({ command: 'node', args: [CLI, 'mcp'], cwd: ROOT }));
   });
 
@@ -130,20 +130,20 @@ describe('annot8 MCP server', () => {
     await client?.close();
   });
 
-  it('lists the annot8 tools', async () => {
+  it('lists the anot8 tools', async () => {
     const { tools } = await client.listTools();
     expect(tools.map((t) => t.name).sort()).toEqual([
-      'annot8_apply_ops',
-      'annot8_inspect_image',
-      'annot8_render',
-      'annot8_schema',
-      'annot8_validate',
+      'anot8_apply_ops',
+      'anot8_inspect_image',
+      'anot8_render',
+      'anot8_schema',
+      'anot8_validate',
     ]);
   });
 
   it('renders a spec and returns image content', async () => {
     const output = path.join(tmp, 'mcp.png');
-    const result = await client.callTool({ name: 'annot8_render', arguments: { specPath: SHAPES, output } });
+    const result = await client.callTool({ name: 'anot8_render', arguments: { specPath: SHAPES, output } });
     expect(result.isError).toBeFalsy();
     const content = result.content as Array<{ type: string; text?: string; data?: string; mimeType?: string }>;
     expect(JSON.parse(content[0].text!)).toMatchObject({ width: 800, height: 500, output });
@@ -154,7 +154,7 @@ describe('annot8 MCP server', () => {
 
   it('returns path-addressed issues as a tool error', async () => {
     const result = await client.callTool({
-      name: 'annot8_validate',
+      name: 'anot8_validate',
       arguments: { spec: { version: 1, image: { source: 'x.png', width: 10, height: 10 }, annotations: [{ type: 'box' }] } },
     });
     expect(result.isError).toBe(true);
@@ -169,7 +169,7 @@ describe('annot8 MCP server', () => {
     spec.image.source = path.join(FIXTURES, 'screen.png');
     writeFileSync(specPath, JSON.stringify(spec));
     const result = await client.callTool({
-      name: 'annot8_apply_ops',
+      name: 'anot8_apply_ops',
       arguments: { specPath, ops: [{ op: 'delete', id: 'email' }], write: true },
     });
     expect(result.isError).toBeFalsy();

@@ -309,7 +309,7 @@ describe('1:1 Native Composite Canvas Exporter Unit Tests', () => {
       expect(ctx.fillText).toHaveBeenCalledWith('12', 100, 100);
     });
 
-    it('E3.5: Applies dark badge text on Potato Gold (Amber) and white text on Red/Green/Cyan/Purple', () => {
+    it('E3.5: Applies dark badge text on Amber Gold (Amber) and white text on Red/Green/Cyan/Purple', () => {
       const canvas = createCanvas(800, 600);
       const ctx = canvas.getContext('2d')!;
 

@@ -185,7 +185,7 @@ export const DropZoneOverlay: React.FC<DropZoneOverlayProps> = ({
           Paste screenshot or drop image
         </h1>
         <p className="text-sm text-slate-400 mb-6 max-w-sm">
-          Annot8 gives developers instant visual annotation, auto-numbering, and synchronized markdown notes.
+          Anot8 gives developers instant visual annotation, auto-numbering, and synchronized markdown notes.
         </p>
 
         {/* Prominent Keyboard Paste Badge */}

@@ -18,7 +18,7 @@ export const PwaUpdatePrompt: React.FC = () => {
 
   useEffect(() => {
     if (!needRefresh) return;
-    const id = toastRef.current.info('A new version of Annot8 is available', {
+    const id = toastRef.current.info('A new version of Anot8 is available', {
       description: 'Reload to update. Unsaved annotations will be cleared.',
       duration: 0,
       action: {

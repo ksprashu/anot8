@@ -456,7 +456,7 @@ describe('Tier 1: Feature Coverage (Features 1 through 23)', () => {
       expect(red.badgeText).toBe('#FFFFFF');
     });
 
-    it('F10.2: Amber/Potato Gold preset (#F59E0B) uses dark text for maximum contrast', () => {
+    it('F10.2: Amber/Amber Gold preset (#F59E0B) uses dark text for maximum contrast', () => {
       const amber = COLOR_DEFINITIONS.amber;
       expect(amber.hex).toBe('#F59E0B');
       expect(amber.badgeText).toBe('#000000');
@@ -951,8 +951,8 @@ describe('Tier 1: Feature Coverage (Features 1 through 23)', () => {
     });
 
     it('F20.4: Fallback export filename is generated when base image has empty name', () => {
-      const fallbackName = `annot8-export-${Date.now()}.png`;
-      expect(fallbackName).toMatch(/^annot8-export-\d+\.png$/);
+      const fallbackName = `anot8-export-${Date.now()}.png`;
+      expect(fallbackName).toMatch(/^anot8-export-\d+\.png$/);
     });
 
     it('F20.5: Exporting markdown report with 0 annotations generates standard empty file', () => {

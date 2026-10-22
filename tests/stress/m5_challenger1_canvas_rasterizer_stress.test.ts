@@ -513,7 +513,7 @@ describe('Milestone 5 Challenger 1: Adversarial 1:1 Offscreen Canvas Rasterizer 
       expect(ctx.fillText).toHaveBeenCalledWith('4', 650, 730);
     });
 
-    it('C4.5: Color contrast rules: dark text (#1E293B) on Potato Gold (Amber), white (#FFFFFF) on others', () => {
+    it('C4.5: Color contrast rules: dark text (#1E293B) on Amber Gold (Amber), white (#FFFFFF) on others', () => {
       const canvas = createCanvas(500, 500);
       const ctx = canvas.getContext('2d')!;
 

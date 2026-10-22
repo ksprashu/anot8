@@ -1,8 +1,8 @@
-# Annot8: 4-Tier Opaque-Box Test Infrastructure
+# Anot8: 4-Tier Opaque-Box Test Infrastructure
 
 ## 1. Overview & Architecture
 
-The Annot8 test infrastructure is an opaque-box, contract-driven verification engine designed to validate 100% of user requirements, state invariants, spatial transformations, vector mathematics, and export fidelity without coupling tests to transient internal implementations.
+The Anot8 test infrastructure is an opaque-box, contract-driven verification engine designed to validate 100% of user requirements, state invariants, spatial transformations, vector mathematics, and export fidelity without coupling tests to transient internal implementations.
 
 The framework operates across four distinct, complementary tiers:
 
@@ -31,7 +31,7 @@ The framework operates across four distinct, complementary tiers:
 
 ## 2. Test Execution Harnesses
 
-Annot8 provides dual complementary execution modes:
+Anot8 provides dual complementary execution modes:
 
 ### 2.1 Vitest Full Suite
 - Runs all unit, component, integration, and stress test suites with JSDOM environment, React Testing Library, Canvas 2D / OffscreenCanvas mocks, and synthetic event dispatchers.
@@ -58,7 +58,7 @@ tests/
 │   ├── geometry.test.ts
 │   ├── ops_config.test.ts
 │   ├── spec.test.ts                        # Spec schema, anchors, percentages, ops, round trips
-│   ├── agentBridge.test.tsx                # window.annot8 session, #spec= links, undo
+│   ├── agentBridge.test.tsx                # window.anot8 session, #spec= links, undo
 │   └── useKeyboardShortcuts.test.ts
 ├── component/                              # React component tests
 │   ├── ColorPalette.test.tsx
@@ -85,10 +85,10 @@ tests/
 │   └── zoom_coordinates_adversarial.test.ts
 ├── node/                                   # Vitest "node" project (no jsdom)
 │   ├── golden.test.ts                      # Renders fixtures/specs/* and pixel-diffs fixtures/golden/*
-│   └── cli.test.ts                         # Built annot8 CLI and MCP server over stdio
+│   └── cli.test.ts                         # Built anot8 CLI and MCP server over stdio
 ├── fixtures/
 │   ├── screen.png                          # 800x500 synthetic UI screenshot
-│   ├── specs/*.annot8.json                 # Fixture specs covering every annotation type, frame, anchors
+│   ├── specs/*.anot8.json                  # Fixture specs covering every annotation type, frame, anchors
 │   └── golden/*.png                        # Committed golden renders
 └── e2e/
     ├── annotely_features.test.ts           # Master Vitest E2E Suite for Annotely Features (53 tests)

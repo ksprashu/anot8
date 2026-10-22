@@ -1,7 +1,7 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
-  entry: { annot8: 'cli/annot8.ts' },
+  entry: { anot8: 'cli/anot8.ts' },
   outDir: 'dist-cli',
   format: ['esm'],
   platform: 'node',

@@ -125,7 +125,7 @@ describe('Markdown Serializer Unit Tests', () => {
       expect(table).toContain('| # | Type | Color | Note |');
       expect(table).toContain('|---|---|---|---|');
       expect(table).toContain('| 1 | Box | Red (#EF4444) | Fix the header alignment and padding. |');
-      expect(table).toContain('| 2 | Ellipse | Potato Gold (#F59E0B) | Highlight avatar badge icon. |');
+      expect(table).toContain('| 2 | Ellipse | Amber Gold (#F59E0B) | Highlight avatar badge icon. |');
     });
 
     it('escapes pipe (|) delimiters in note strings to prevent broken tables', () => {
@@ -214,7 +214,7 @@ describe('Markdown Serializer Unit Tests', () => {
 
     it('generates timestamped fallback name when base image is null or empty', () => {
       const fallbackPng = generateExportFilename(null, 'png');
-      expect(fallbackPng).toMatch(/^annot8-export-\d+\.png$/);
+      expect(fallbackPng).toMatch(/^anot8-export-\d+\.png$/);
     });
 
     it('formatShapeTypeName capitalizes types safely', () => {

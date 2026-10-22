@@ -1,5 +1,5 @@
 /**
- * Annot8 Shared Test Fixtures, Mock Generators & Reference Oracle Functions
+ * Anot8 Shared Test Fixtures, Mock Generators & Reference Oracle Functions
  * Strictly adheres to PROJECT.md and ORIGINAL_REQUEST.md interface contracts.
  */
 
@@ -28,7 +28,7 @@ export const COLOR_DEFINITIONS: Record<PresetColor, ColorDefinition> = {
   },
   amber: {
     id: 'amber',
-    name: 'Potato Gold / Amber',
+    name: 'Amber Gold / Amber',
     hex: '#F59E0B',
     stroke: '#F59E0B',
     fill: 'rgba(245, 158, 11, 0.15)',

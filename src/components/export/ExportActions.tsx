@@ -37,7 +37,7 @@ export interface ExportActionsProps {
 export function sanitizeBaseFilename(fileName?: string): string {
   if (!fileName) {
     const timestamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
-    return `annot8-${timestamp}`;
+    return `anot8-${timestamp}`;
   }
   return fileName.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9_-]/g, '_');
 }
@@ -227,18 +227,18 @@ export const ExportActions: React.FC<ExportActionsProps> = ({
     }
   };
 
-  // 6. Save the document as an Annot8 spec (reloadable by drop, the CLI, or agents)
+  // 6. Save the document as an Anot8 spec (reloadable by drop, the CLI, or agents)
   const handleSaveSpec = async () => {
     if (disabled || isBusy || !image) return;
     setExportingType('spec');
     try {
       // The agent bridge keeps anchors from a loaded spec and embeds blob: images; fall back to a pixel spec.
-      const spec = window.annot8
-        ? await window.annot8.getSpec()
+      const spec = window.anot8
+        ? await window.anot8.getSpec()
         : toSpec({ image, annotations, frame });
       const baseName = sanitizeBaseFilename(image.fileName);
-      downloadTextFile(`${JSON.stringify(spec, null, 2)}\n`, `${baseName}.annot8.json`, 'application/json');
-      notify('success', 'Saved Annot8 spec', `${baseName}.annot8.json`);
+      downloadTextFile(`${JSON.stringify(spec, null, 2)}\n`, `${baseName}.anot8.json`, 'application/json');
+      notify('success', 'Saved Anot8 spec', `${baseName}.anot8.json`);
     } catch (err: unknown) {
       notify('error', 'Failed to save spec', err instanceof Error ? err.message : String(err));
     } finally {
@@ -348,15 +348,15 @@ export const ExportActions: React.FC<ExportActionsProps> = ({
         )}
       </button>
 
-      {/* Save Annot8 spec */}
+      {/* Save Anot8 spec */}
       <button
         type="button"
         data-testid="btn-save-spec"
         onClick={handleSaveSpec}
         disabled={disabled || !hasImage || isBusy}
         className="flex items-center gap-1 p-1.5 rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-30 disabled:hover:bg-transparent disabled:cursor-not-allowed cursor-pointer active:scale-95"
-        title="Save as an editable Annot8 spec (.annot8.json)"
-        aria-label="Save Annot8 spec"
+        title="Save as an editable Anot8 spec (.anot8.json)"
+        aria-label="Save Anot8 spec"
       >
         {exportingType === 'spec' ? (
           <Loader2 className="w-4 h-4 animate-spin" data-testid="spinner-save-spec" />

@@ -51,8 +51,8 @@ describe('Static Bundle & Offline Autonomy', () => {
     it('ships a web app manifest with standalone display and installable icons', () => {
       const manifest = JSON.parse(readDist('manifest.webmanifest'));
 
-      expect(manifest.name).toContain('Annot8');
-      expect(manifest.short_name).toBe('Annot8');
+      expect(manifest.name).toContain('Anot8');
+      expect(manifest.short_name).toBe('Anot8');
       expect(manifest.display).toBe('standalone');
       expect(manifest.start_url).toBe('./');
       expect(manifest.scope).toBe('./');

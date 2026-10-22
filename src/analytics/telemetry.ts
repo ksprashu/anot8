@@ -1,5 +1,5 @@
 /**
- * Annot8 Custom Telemetry & Analytics Module
+ * Anot8 Custom Telemetry & Analytics Module
  * Provides typed, asynchronous, non-blocking GA4 event tracking with error boundaries and offline resilience.
  */
 

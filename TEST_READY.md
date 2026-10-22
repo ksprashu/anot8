@@ -1,8 +1,8 @@
-# TEST_READY: Annot8 Master Test Verification Report
+# TEST_READY: Anot8 Master Test Verification Report
 
 **Status**: READY & VERIFIED  
 **Date**: 2026-09-13  
-**Application**: Annot8 Screenshot Annotation & Note-Taking System  
+**Application**: Anot8 Screenshot Annotation & Note-Taking System  
 **Execution Commands**: `npm test` & `npx tsx tests/e2e/test-runner.ts`  
 **Overall Result**: **100% Tests Passing Across All Suites**  
 **Typecheck**: **0 Errors (`tsc --noEmit`)**  
@@ -12,7 +12,7 @@
 
 ## 1. Executive Summary
 
-The complete opaque-box test infrastructure and master test suites for **Annot8** have been fully verified covering all original and enhancement requirements:
+The complete opaque-box test infrastructure and master test suites for **Anot8** have been fully verified covering all original and enhancement requirements:
 1. **Core Platform Baseline (Features 1 through 23)**: Clipboard-first image ingestion, vector annotation toolkit (box, ellipse, arrow, pin), 1..N sequential badge re-indexing, synchronized notes sidebar, 1:1 composite PNG export, dark/light themes, and keyboard shortcuts.
 2. **Image Paste Modes, Wheel Zoom, Responsive Toolbar & Presets (R1 through R5)**:
    - **R1**: Replace & Clear (zero ghost annotations), Replace & Keep, Add as Layer / Overlay, and per-annotation style retention.
@@ -28,7 +28,7 @@ The complete opaque-box test infrastructure and master test suites for **Annot8*
 
 ```
 =============================================================
-  ANNOT8 MASTER TEST VERIFICATION SUMMARY
+  ANOT8 MASTER TEST VERIFICATION SUMMARY
 =============================================================
   Standalone E2E Runner (test-runner.ts):
     Total Suites:    60

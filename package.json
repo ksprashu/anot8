@@ -1,10 +1,10 @@
 {
-  "name": "annot8",
+  "name": "anot8",
   "version": "1.0.0",
   "private": true,
   "type": "module",
   "bin": {
-    "annot8": "dist-cli/annot8.js"
+    "anot8": "dist-cli/anot8.js"
   },
   "scripts": {
     "dev": "vite",

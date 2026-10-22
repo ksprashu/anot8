@@ -131,7 +131,7 @@ describe('spec hash and detection', () => {
 });
 
 describe('AgentBridge', () => {
-  it('installs window.annot8 and agent edits are undoable', async () => {
+  it('installs window.anot8 and agent edits are undoable', async () => {
     let app: AppContextValue | null = null;
     const Probe = () => {
       app = useApp();
@@ -145,7 +145,7 @@ describe('AgentBridge', () => {
         </ToastProvider>
       </AppProvider>
     );
-    const session = window.annot8!;
+    const session = window.anot8!;
     expect(session).toBeInstanceOf(AgentSession);
     (session as unknown as { host: { backend: RenderBackend } }).host.backend = fakeBackend;
 
@@ -166,6 +166,6 @@ describe('AgentBridge', () => {
     expect(app!.state.annotations[1].geometry).toMatchObject({ endX: 300, endY: 125 });
 
     unmount();
-    expect(window.annot8).toBeUndefined();
+    expect(window.anot8).toBeUndefined();
   });
 });

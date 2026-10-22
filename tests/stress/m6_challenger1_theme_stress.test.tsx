@@ -316,7 +316,7 @@ describe('Milestone 6 Challenger 1: Adversarial Theme Engine & Shortcuts Modal S
     });
 
     it('C2.4: Gracefully handles QuotaExceededError when localStorage storage limit is reached', () => {
-      const quotaError = new DOMException('QuotaExceededError: Setting key annot8_theme exceeded quota', 'QuotaExceededError');
+      const quotaError = new DOMException('QuotaExceededError: Setting key anot8_theme exceeded quota', 'QuotaExceededError');
       vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
         throw quotaError;
       });

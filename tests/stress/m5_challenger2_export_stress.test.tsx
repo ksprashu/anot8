@@ -361,11 +361,11 @@ describe('Milestone 5 Challenger 2: Adversarial Stress & Resiliency Suite', () =
       expect(mdName).toBe('checkout-v2.modal-notes.md');
 
       const nullImgName = generateExportFilename(null, 'png', 'annotated');
-      expect(nullImgName).toMatch(/^annot8-export-\d+\.png$/);
+      expect(nullImgName).toMatch(/^anot8-export-\d+\.png$/);
     });
 
     it('sanitizeBaseFilename handles undef and special characters', () => {
-      expect(sanitizeBaseFilename(undefined)).toMatch(/^annot8-\d{4}-\d{2}-\d{2}/);
+      expect(sanitizeBaseFilename(undefined)).toMatch(/^anot8-\d{4}-\d{2}-\d{2}/);
       expect(sanitizeBaseFilename('test file #1 (copy).png')).toBe('test_file__1__copy_');
     });
   });

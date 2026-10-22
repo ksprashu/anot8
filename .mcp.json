@@ -4,9 +4,9 @@
       "type": "http",
       "url": "https://mcp.cloudflare.com/mcp"
     },
-    "annot8": {
+    "anot8": {
       "command": "node",
-      "args": ["dist-cli/annot8.js", "mcp"]
+      "args": ["dist-cli/anot8.js", "mcp"]
     }
   }
 }

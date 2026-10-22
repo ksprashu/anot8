@@ -10,7 +10,7 @@ export default {
       colors: {
         preset: {
           red: '#EF4444',
-          amber: '#F59E0B',   // Potato Gold
+          amber: '#F59E0B',   // Amber Gold
           green: '#10B981',
           cyan: '#06B6D4',
           purple: '#8B5CF6',

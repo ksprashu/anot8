@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * annot8 CLI: render, validate, and edit Annot8 specs from the shell.
+ * anot8 CLI: render, validate, and edit Anot8 specs from the shell.
  * Machine-readable output goes to stdout as JSON; errors go to stderr as JSON with a non-zero exit code.
  */
 import { readFile, writeFile } from 'node:fs/promises';
@@ -11,16 +11,16 @@ import { z } from 'zod';
 import { inspectImage, renderSpec } from '../src/core/node/render';
 import { startMcpServer } from './mcp';
 
-const USAGE = `annot8 — parametric screenshot annotation
+const USAGE = `anot8 — parametric screenshot annotation
 
 Usage:
-  annot8 inspect <image>                          Print image dimensions as JSON
-  annot8 init <image> [-o spec.json]              Write a starter spec for an image
-  annot8 render <spec.json|-> [-o out.png] [--md notes.md] [--scale n]
-  annot8 validate <spec.json|->                   Check a spec; prints issues with paths
-  annot8 apply <spec.json|-> (--ops '<json>' | --ops-file ops.json) [-o out.json | --in-place]
-  annot8 schema [spec|ops]                        Print the JSON Schema for specs (or edit ops)
-  annot8 mcp                                      Run the local stdio MCP server
+  anot8 inspect <image>                          Print image dimensions as JSON
+  anot8 init <image> [-o spec.json]              Write a starter spec for an image
+  anot8 render <spec.json|-> [-o out.png] [--md notes.md] [--scale n]
+  anot8 validate <spec.json|->                   Check a spec; prints issues with paths
+  anot8 apply <spec.json|-> (--ops '<json>' | --ops-file ops.json) [-o out.json | --in-place]
+  anot8 schema [spec|ops]                        Print the JSON Schema for specs (or edit ops)
+  anot8 mcp                                      Run the local stdio MCP server
 
 Image paths in a spec resolve relative to the spec file.`;
 
@@ -101,7 +101,7 @@ async function main(argv: string[]): Promise<void> {
     case 'init': {
       const image = requirePositional(positionals, 'image');
       const { width, height } = await inspectImage(image);
-      const out = values.out ?? `${image.replace(/\.[^./\\]+$/, '')}.annot8.json`;
+      const out = values.out ?? `${image.replace(/\.[^./\\]+$/, '')}.anot8.json`;
       const outDir = path.dirname(path.resolve(out));
       const imagePath = path.resolve(image);
       // Keep specs portable with a relative path, unless the two only share the filesystem root.
@@ -119,7 +119,7 @@ async function main(argv: string[]): Promise<void> {
       const scale = values.scale !== undefined ? Number(values.scale) : undefined;
       if (scale !== undefined && !(scale > 0)) throw new UsageError('--scale must be a positive number');
       const result = await renderSpec(data, { baseDir, scale });
-      const out = values.out ?? (file === '-' ? 'annot8.png' : file.replace(/(\.annot8)?\.json$/i, '') + '.png');
+      const out = values.out ?? (file === '-' ? 'anot8.png' : file.replace(/(\.anot8)?\.json$/i, '') + '.png');
       await writeFile(out, result.png);
       if (values.md) await writeFile(values.md, result.markdown);
       print({
@@ -166,7 +166,7 @@ async function main(argv: string[]): Promise<void> {
 
     case 'schema': {
       const which = positionals[0] ?? 'spec';
-      if (which !== 'spec' && which !== 'ops') throw new UsageError('Use "annot8 schema spec" or "annot8 schema ops"');
+      if (which !== 'spec' && which !== 'ops') throw new UsageError('Use "anot8 schema spec" or "anot8 schema ops"');
       print(which === 'ops' ? z.toJSONSchema(OpsSchema) : getSpecJsonSchema());
       return;
     }

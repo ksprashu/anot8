@@ -25,7 +25,7 @@ describe('Milestone M-Rel-1: Governance, Disclaimers & Documentation Test Suite'
 
     const readmeContent = fs.readFileSync(readmePath, 'utf-8');
     // Verify exact non-affiliation text
-    expect(readmeContent).toContain('Annot8 is an independent, personal open-source project created and maintained by Prashanth Subrahmanyam');
+    expect(readmeContent).toContain('Anot8 is an independent, personal open-source project created and maintained by Prashanth Subrahmanyam');
     expect(readmeContent).toContain('It is not an official Google project or product, and is not supported, certified, or endorsed by Google LLC in any capacity');
     expect(readmeContent).toContain('WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND');
     expect(readmeContent).toContain('Use at your own risk');
@@ -50,7 +50,7 @@ describe('Milestone M-Rel-1: Governance, Disclaimers & Documentation Test Suite'
     expect(fs.existsSync(contributingPath)).toBe(true);
 
     const contributingContent = fs.readFileSync(contributingPath, 'utf-8');
-    expect(contributingContent).toContain('Contributing to Annot8');
+    expect(contributingContent).toContain('Contributing to Anot8');
     expect(contributingContent).toContain('Project Scope & Support Disclaimer');
     expect(contributingContent).toContain('There is no Service Level Agreement (SLA)');
     expect(contributingContent).toContain('not an official Google project or product');

@@ -92,7 +92,7 @@ describe('Canvas Composite Export & Clipboard Integration Tests', () => {
     const table = serializeAnnotationsToMarkdown(mockAnnotations, 'table');
     expect(table).toContain('| # | Type | Color | Note |');
     expect(table).toContain('| 1 | Box | Red (#EF4444) | Step 1: Check login container layout |');
-    expect(table).toContain('| 2 | Ellipse | Potato Gold (#F59E0B) | Step 2: Inspect submit button contrast |');
+    expect(table).toContain('| 2 | Ellipse | Amber Gold (#F59E0B) | Step 2: Inspect submit button contrast |');
     expect(table).toContain('| 3 | Arrow | Emerald Green (#10B981) | Step 3: Point out validation banner |');
     expect(table).toContain('| 4 | Pin | Electric Cyan (#06B6D4) | Step 4: Check help icon pin |');
   });

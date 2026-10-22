@@ -2,7 +2,7 @@
 
 ## Initial Request — 2026-08-31T14:45:09Z
 
-Anotato is a screenshot annotation and note-taking web application designed for developer coding harnesses. It allows users to instantly paste clipboard images, add numbered visual annotations (bounding boxes, circles, arrows, callout pins), write structured notes for each annotation in a synchronized sidebar, and copy both the composite annotated image (PNG) and markdown notes to the system clipboard via single-click actions and keyboard shortcuts.
+Anot8 is a screenshot annotation and note-taking web application designed for developer coding harnesses. It allows users to instantly paste clipboard images, add numbered visual annotations (bounding boxes, circles, arrows, callout pins), write structured notes for each annotation in a synchronized sidebar, and copy both the composite annotated image (PNG) and markdown notes to the system clipboard via single-click actions and keyboard shortcuts.
 
 Working directory: .
 Integrity mode: demo
@@ -21,7 +21,7 @@ Integrity mode: demo
   - Directional arrows and pointers
   - Numbered callout pins (auto-incrementing badges: 1, 2, 3...)
 - Every drawn annotation automatically receives a sequential index badge placed on the element.
-- Allow selecting, moving, resizing, styling (high-contrast preset colors like Red, Amber/Potato Gold, Green, Cyan, Purple), and deleting annotations.
+- Allow selecting, moving, resizing, styling (high-contrast preset colors like Red, Amber/Amber Gold, Green, Cyan, Purple), and deleting annotations.
 - Full Undo (`Cmd+Z` / `Ctrl+Z`) and Redo (`Cmd+Shift+Z` / `Ctrl+Y`) history stack.
 
 ### R3. Synchronized Split-View Annotation Notes Panel
@@ -65,7 +65,7 @@ Integrity mode: demo
 
 ## Follow-up 1: Image Paste Modes, Wheel Zoom, Responsive Toolbar & Style Presets — 2026-09-13T16:32:40Z
 
-Resolve image paste ghost annotations and support replacement/layering options, quantize mouse wheel zoom to standard preset steps, ensure responsive toolbar visibility on compact viewports, and update stroke width and fill opacity controls in Annot8.
+Resolve image paste ghost annotations and support replacement/layering options, quantize mouse wheel zoom to standard preset steps, ensure responsive toolbar visibility on compact viewports, and update stroke width and fill opacity controls in Anot8.
 
 Integrity mode: development
 
@@ -109,7 +109,7 @@ Integrity mode: development
 
 ## Follow-up 2: Annotely-Inspired Tools & High-DPI Scalable Badges — 2026-09-13T16:31:09Z
 
-Enhance the Annot8 screenshot annotation web application with professional annotation tools inspired by Annotely: a smooth Gaussian privacy blur/redact tool, an additive multi-region highlight/spotlight focus mode, a polished thicker arrow shape, and resolution-aware scalable badge numbering.
+Enhance the Anot8 screenshot annotation web application with professional annotation tools inspired by Annotely: a smooth Gaussian privacy blur/redact tool, an additive multi-region highlight/spotlight focus mode, a polished thicker arrow shape, and resolution-aware scalable badge numbering.
 
 Integrity mode: development
 

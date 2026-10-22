@@ -159,7 +159,7 @@ describe('ExportActions Component Suite', () => {
     it('sanitizeBaseFilename utility derives clean base name', () => {
       expect(sanitizeBaseFilename('my-dashboard.png')).toBe('my-dashboard');
       expect(sanitizeBaseFilename('screen with spaces & special!.jpg')).toBe('screen_with_spaces___special_');
-      expect(sanitizeBaseFilename(undefined)).toMatch(/^annot8-\d{4}-\d{2}-\d{2}/);
+      expect(sanitizeBaseFilename(undefined)).toMatch(/^anot8-\d{4}-\d{2}-\d{2}/);
     });
   });
 });
