@@ -7,6 +7,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+import { assertSafeHttpUrl, isPrivateOrReservedIp } from '../../src/core/node/backend';
 
 const ROOT = path.resolve(__dirname, '../..');
 const CLI = path.join(ROOT, 'dist-cli/anot8.js');
@@ -51,16 +52,33 @@ describe('anot8 CLI', () => {
     }
   });
 
-  it('render writes a PNG and markdown notes', () => {
+  it('render writes a PNG and markdown notes with bounds', () => {
     const out = path.join(tmp, 'shapes.png');
     const md = path.join(tmp, 'shapes.md');
-    const { code, stdout } = run(['render', SHAPES, '-o', out, '--md', md]);
+    const { code, stdout } = run(['render', SHAPES, '-o', out, '--md', md, '--format', 'table']);
     expect(code).toBe(0);
     const summary = JSON.parse(stdout);
     expect(summary).toMatchObject({ output: out, width: 800, height: 500 });
     expect(summary.annotations.map((a: { index: number }) => a.index)).toEqual([1, 2, 3, 4, 5]);
+    expect(summary.annotations[0].bounds).toMatchObject({ x: expect.any(Number), y: expect.any(Number) });
     expect(readFileSync(out).subarray(0, 8).toString('hex')).toBe(PNG_SIGNATURE);
-    expect(readFileSync(md, 'utf8')).toContain('Page title');
+    expect(readFileSync(md, 'utf8')).toContain('| # | Type | Color | Note |');
+  });
+
+  it('markdown command serializes notes in requested format', () => {
+    const out = path.join(tmp, 'checklist.md');
+    const { code, stdout } = run(['markdown', SHAPES, '--format', 'checklist', '-o', out]);
+    expect(code).toBe(0);
+    expect(JSON.parse(stdout).format).toBe('checklist');
+    expect(readFileSync(out, 'utf8')).toContain('- [ ] **#1');
+  });
+
+  it('share command prints a #spec=<base64url> link', () => {
+    const { code, stdout } = run(['share', SHAPES, '--app-url', 'https://anot8.ksprashu.dev/']);
+    expect(code).toBe(0);
+    const res = JSON.parse(stdout);
+    expect(res.hash).toMatch(/^#spec=[A-Za-z0-9_-]+$/);
+    expect(res.url).toBe(`https://anot8.ksprashu.dev/${res.hash}`);
   });
 
   it('render --scale multiplies the output size', () => {
@@ -115,6 +133,7 @@ describe('anot8 CLI', () => {
     expect(run(['bogus']).code).toBe(2);
     expect(run(['render']).code).toBe(2);
     expect(run(['apply', SHAPES]).code).toBe(2);
+    expect(run(['markdown', SHAPES, '--format', 'bogus']).code).toBe(2);
   });
 });
 
@@ -130,26 +149,93 @@ describe('anot8 MCP server', () => {
     await client?.close();
   });
 
-  it('lists the anot8 tools', async () => {
+  it('lists the anot8 tools, resources, and prompts', async () => {
     const { tools } = await client.listTools();
     expect(tools.map((t) => t.name).sort()).toEqual([
       'anot8_apply_ops',
+      'anot8_init_spec',
       'anot8_inspect_image',
+      'anot8_markdown',
       'anot8_render',
       'anot8_schema',
+      'anot8_share_url',
       'anot8_validate',
     ]);
+
+    const { resources } = await client.listResources();
+    expect(resources.map((r) => r.uri).sort()).toEqual([
+      'anot8://guide',
+      'anot8://schema/ops',
+      'anot8://schema/spec',
+    ]);
+
+    const guideResource = await client.readResource({ uri: 'anot8://guide' });
+    expect((guideResource.contents[0] as { text: string }).text).toContain('Anot8 specs');
+
+    const { prompts } = await client.listPrompts();
+    expect(prompts.map((p) => p.name).sort()).toEqual(['annotate-screenshot', 'redact-screenshot']);
+
+    const prompt = await client.getPrompt({
+      name: 'annotate-screenshot',
+      arguments: { image: 'screen.png', goal: 'Highlight login button' },
+    });
+    expect((prompt.messages[0].content as { text: string }).text).toContain('Highlight login button');
   });
 
-  it('renders a spec and returns image content', async () => {
+  it('initializes a starter spec via anot8_init_spec', async () => {
+    const outSpec = path.join(tmp, 'init-mcp.anot8.json');
+    const result = await client.callTool({
+      name: 'anot8_init_spec',
+      arguments: {
+        source: path.join(FIXTURES, 'screen.png'),
+        output: outSpec,
+        defaults: { color: 'cyan' },
+        annotations: [{ id: 'box1', type: 'box', x: '10%', y: '10%', width: 100, height: 50, note: 'Header' }],
+      },
+    });
+    expect(result.isError).toBeFalsy();
+    const payload = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    expect(payload).toMatchObject({ width: 800, height: 500, written: outSpec });
+    expect(JSON.parse(readFileSync(outSpec, 'utf8')).annotations[0].id).toBe('box1');
+  });
+
+  it('renders a spec and returns image content plus annotation bounds', async () => {
     const output = path.join(tmp, 'mcp.png');
-    const result = await client.callTool({ name: 'anot8_render', arguments: { specPath: SHAPES, output } });
+    const result = await client.callTool({
+      name: 'anot8_render',
+      arguments: { specPath: SHAPES, output, markdownFormat: 'report' },
+    });
     expect(result.isError).toBeFalsy();
     const content = result.content as Array<{ type: string; text?: string; data?: string; mimeType?: string }>;
-    expect(JSON.parse(content[0].text!)).toMatchObject({ width: 800, height: 500, output });
+    const summary = JSON.parse(content[0].text!);
+    expect(summary).toMatchObject({ width: 800, height: 500, output });
+    expect(summary.annotations[0].bounds).toMatchObject({ x: 244, y: 114, width: 232, height: 36 });
+    expect(summary.markdown).toContain('# Annotation Report:');
     expect(content[1]).toMatchObject({ type: 'image', mimeType: 'image/png' });
     expect(Buffer.from(content[1].data!, 'base64').subarray(0, 8).toString('hex')).toBe(PNG_SIGNATURE);
     expect(readFileSync(output).subarray(0, 8).toString('hex')).toBe(PNG_SIGNATURE);
+  });
+
+  it('serializes markdown via anot8_markdown and encodes share URLs via anot8_share_url', async () => {
+    const mdResult = await client.callTool({
+      name: 'anot8_markdown',
+      arguments: { specPath: SHAPES, format: 'checklist' },
+    });
+    expect(mdResult.isError).toBeFalsy();
+    const mdPayload = JSON.parse((mdResult.content as Array<{ text: string }>)[0].text);
+    expect(mdPayload.markdown).toContain('- [ ] **#1');
+
+    const shareResult = await client.callTool({
+      name: 'anot8_share_url',
+      arguments: { specPath: SHAPES },
+    });
+    expect(shareResult.isError).toBeFalsy();
+    const sharePayload = JSON.parse((shareResult.content as Array<{ text: string }>)[0].text);
+    expect(sharePayload.url).toMatch(/^https:\/\/anot8\.ksprashu\.dev\/#spec=[A-Za-z0-9_-]+$/);
+    const decoded = JSON.parse(
+      Buffer.from(sharePayload.hash.slice('#spec='.length), 'base64url').toString('utf8')
+    );
+    expect(decoded.image.source).toMatch(/^data:image\/png;base64,/);
   });
 
   it('returns path-addressed issues as a tool error', async () => {
@@ -175,5 +261,30 @@ describe('anot8 MCP server', () => {
     expect(result.isError).toBeFalsy();
     const written = JSON.parse(readFileSync(specPath, 'utf8'));
     expect(written.annotations.some((a: { id?: string }) => a.id === 'email')).toBe(false);
+  });
+});
+
+describe('Node backend URL and resource guards', () => {
+  it('blocks private, loopback, and metadata URLs while allowing public https URLs', () => {
+    expect(isPrivateOrReservedIp('127.0.0.1')).toBe(true);
+    expect(isPrivateOrReservedIp('10.0.0.1')).toBe(true);
+    expect(isPrivateOrReservedIp('169.254.169.254')).toBe(true);
+    expect(isPrivateOrReservedIp('192.168.1.10')).toBe(true);
+    expect(isPrivateOrReservedIp('172.16.5.4')).toBe(true);
+    expect(isPrivateOrReservedIp('::1')).toBe(true);
+    expect(isPrivateOrReservedIp('::ffff:127.0.0.1')).toBe(true);
+    expect(isPrivateOrReservedIp('::ffff:7f00:1')).toBe(true);
+    expect(isPrivateOrReservedIp('64:ff9b::7f00:1')).toBe(true);
+    expect(isPrivateOrReservedIp('2001:0000:4136:e378:8000:63bf:3fff:fdd2')).toBe(true);
+    expect(isPrivateOrReservedIp('2002:7f00:1::')).toBe(true);
+    expect(isPrivateOrReservedIp('93.184.216.34')).toBe(false);
+
+    expect(() => assertSafeHttpUrl('http://localhost:8080/x.png')).toThrow(/private or loopback/);
+    expect(() => assertSafeHttpUrl('http://[::ffff:127.0.0.1]/x.png')).toThrow(/private or loopback/);
+    expect(() => assertSafeHttpUrl('http://169.254.169.254/latest/meta-data')).toThrow(/private or loopback/);
+    expect(() => assertSafeHttpUrl('http://metadata.google.internal/computeMetadata/v1/')).toThrow(/private or loopback/);
+    expect(() => assertSafeHttpUrl('https://user:pass@example.com/a.png')).toThrow(/credentials/);
+    expect(() => assertSafeHttpUrl('ftp://example.com/a.png')).toThrow(/protocol/);
+    expect(assertSafeHttpUrl('https://example.com/a.png').hostname).toBe('example.com');
   });
 });

@@ -8,13 +8,17 @@ import { serializeAnnotationsToMarkdown } from '../export/markdownSerializer';
 import {
   DocumentSpec,
   OpsSchema,
+  SpecError,
   applyOps,
   compileSpec,
+  fileNameFromSource,
   getSpecJsonSchema,
   parseSpec,
   toSpec,
 } from '../spec';
 import { z } from 'zod';
+
+export { fileNameFromSource };
 
 export interface AgentSessionHost {
   getState: () => AppState;
@@ -30,10 +34,17 @@ interface Synced {
   frame: AppState['frame'];
 }
 
-function fileNameFromSource(source: string): string {
-  if (source.startsWith('data:')) return 'spec-image.png';
-  const last = source.split(/[?#]/)[0].split('/').pop();
-  return last || 'spec-image.png';
+const BROWSER_IMAGE_SOURCE_PATTERN = /^(https?:\/\/|data:image\/|blob:)/i;
+
+function assertSafeBrowserImageSource(source: string): void {
+  if (!BROWSER_IMAGE_SOURCE_PATTERN.test(source)) {
+    throw new SpecError([
+      {
+        path: 'image.source',
+        message: 'Browser specs must use an http(s), data:image/*, or blob: URL',
+      },
+    ]);
+  }
 }
 
 function blobToDataUrl(blob: Blob): Promise<string> {
@@ -101,8 +112,10 @@ export class AgentSession {
    */
   async loadSpec(input: unknown): Promise<{ annotations: { id: string; type: string; index: number }[] }> {
     const spec = parseSpec(input);
-    let image = this.host.getState().image;
+    const previousImage = this.host.getState().image;
+    let image = previousImage;
     if (!this.isSameImage(spec.image.source, image)) {
+      assertSafeBrowserImageSource(spec.image.source);
       const element = (await this.backend.loadImage(spec.image.source)) as HTMLImageElement;
       image = {
         id: `spec-${Date.now()}`,
@@ -115,6 +128,13 @@ export class AgentSession {
       // Compile before touching state so an invalid spec leaves the canvas as it was.
       compileSpec(spec, { width: image.naturalWidth, height: image.naturalHeight });
       this.host.dispatch({ type: 'SET_IMAGE', payload: image });
+      if (previousImage?.src.startsWith('blob:') && typeof URL !== 'undefined' && typeof URL.revokeObjectURL === 'function') {
+        try {
+          URL.revokeObjectURL(previousImage.src);
+        } catch {
+          // Ignore revoke errors in test environments
+        }
+      }
     }
     return this.commit(spec, image);
   }
@@ -164,10 +184,17 @@ export class AgentSession {
   }
 }
 
+/** Maximum decoded #spec= hash length (2 MB) to guard against oversized URL payloads. */
+export const MAX_SPEC_HASH_CHARS = 2 * 1024 * 1024;
+
 /** Decodes a spec from a "#spec=<base64url JSON>" location hash, or returns null if there is none. */
 export function decodeSpecHash(hash: string): unknown | null {
+  if (!hash.startsWith('#spec=')) return null;
+  if (hash.length > MAX_SPEC_HASH_CHARS) {
+    throw new Error('The #spec link exceeds the maximum allowed size');
+  }
   const match = /^#spec=([A-Za-z0-9_-]+={0,2})$/.exec(hash);
-  if (!match) return null;
+  if (!match) throw new Error('The #spec link is not valid base64url');
   const base64 = match[1].replace(/-/g, '+').replace(/_/g, '/');
   const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
   return JSON.parse(new TextDecoder().decode(bytes));
@@ -175,9 +202,30 @@ export function decodeSpecHash(hash: string): unknown | null {
 
 export function encodeSpecHash(spec: unknown): string {
   const bytes = new TextEncoder().encode(JSON.stringify(spec));
-  let binary = '';
-  bytes.forEach((b) => (binary += String.fromCharCode(b)));
-  return `#spec=${btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')}`;
+  const estimatedHashLen = 6 + Math.ceil((bytes.byteLength * 4) / 3);
+  if (estimatedHashLen > MAX_SPEC_HASH_CHARS) {
+    throw new SpecError([
+      {
+        path: 'image.source',
+        message: `Encoded #spec URL (~${estimatedHashLen} chars) exceeds maximum allowed size (${MAX_SPEC_HASH_CHARS} chars)`,
+      },
+    ]);
+  }
+  const CHUNK = 0x8000;
+  const parts: string[] = [];
+  for (let i = 0; i < bytes.length; i += CHUNK) {
+    parts.push(String.fromCharCode(...bytes.subarray(i, i + CHUNK)));
+  }
+  const hash = `#spec=${btoa(parts.join('')).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')}`;
+  if (hash.length > MAX_SPEC_HASH_CHARS) {
+    throw new SpecError([
+      {
+        path: 'image.source',
+        message: `Encoded #spec URL (${hash.length} chars) exceeds maximum allowed size (${MAX_SPEC_HASH_CHARS} chars)`,
+      },
+    ]);
+  }
+  return hash;
 }
 
 /** Heuristic for dropped/pasted files and text: does this look like an Anot8 spec? */

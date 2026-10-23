@@ -15,6 +15,8 @@ declare global {
   }
 }
 
+const MAX_DROPPED_SPEC_BYTES = 10 * 1024 * 1024;
+
 function isSpecFile(file: File | undefined): file is File {
   return Boolean(file && typeof file.text === 'function' && (file.type === 'application/json' || /\.json$/i.test(file.name ?? '')));
 }
@@ -52,15 +54,16 @@ export const AgentBridge: React.FC = () => {
       }
     };
 
-    const hashSpec = (() => {
-      try {
-        return decodeSpecHash(window.location.hash);
-      } catch {
-        return undefined;
-      }
-    })();
-    if (hashSpec === undefined) toastRef.current.error('Could not read the #spec link', 'The spec is not valid base64url JSON');
-    else if (hashSpec !== null) void loadFromUser(hashSpec, 'the link');
+    let hashSpec: unknown = null;
+    try {
+      hashSpec = decodeSpecHash(window.location.hash);
+    } catch (err) {
+      toastRef.current.error(
+        'Could not read the #spec link',
+        err instanceof Error && err.message ? err.message : 'The spec is not valid base64url JSON'
+      );
+    }
+    if (hashSpec !== null) void loadFromUser(hashSpec, 'the link');
 
     // Capture phase runs before the image drop handlers, which would reject a JSON file.
     const onDrop = (e: DragEvent) => {
@@ -68,6 +71,15 @@ export const AgentBridge: React.FC = () => {
       if (!file) return;
       e.preventDefault();
       e.stopPropagation();
+      try {
+        window.dispatchEvent(new Event('dragleave'));
+      } catch {
+        // Ignore in minimal test environments
+      }
+      if (typeof file.size === 'number' && file.size > MAX_DROPPED_SPEC_BYTES) {
+        toastRef.current.error('Could not read spec file', 'Spec file exceeds 10 MB limit');
+        return;
+      }
       file
         .text()
         .then((text) => loadFromUser(JSON.parse(text), file.name))

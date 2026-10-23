@@ -6,9 +6,19 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
-import { SpecError, applyOps, getSpecJsonSchema, OpsSchema, SPEC_VERSION, validateSpec, parseSpec } from '../src/spec';
 import { z } from 'zod';
-import { inspectImage, renderSpec } from '../src/core/node/render';
+import { MarkdownExportFormat } from '../src/export/markdownSerializer';
+import { encodeSpecHash } from '../src/bridge/agentSession';
+import { SpecError, applyOps, compileSpec, getSpecJsonSchema, OpsSchema, parseSpec } from '../src/spec';
+import {
+  buildStarterSpec,
+  inspectImage,
+  inspectImageForSpec,
+  prepareShareableSpec,
+  renderSpec,
+  renderSpecMarkdown,
+  summarizeCompiledAnnotations,
+} from '../src/core/node/render';
 import { startMcpServer } from './mcp';
 
 const USAGE = `anot8 — parametric screenshot annotation
@@ -16,15 +26,27 @@ const USAGE = `anot8 — parametric screenshot annotation
 Usage:
   anot8 inspect <image>                          Print image dimensions as JSON
   anot8 init <image> [-o spec.json]              Write a starter spec for an image
-  anot8 render <spec.json|-> [-o out.png] [--md notes.md] [--scale n]
+  anot8 render <spec.json|-> [-o out.png] [--md notes.md] [--format list|table|checklist|report] [--scale n]
+  anot8 markdown <spec.json|-> [--format list|table|checklist|report] [-o notes.md]
   anot8 validate <spec.json|->                   Check a spec; prints issues with paths
   anot8 apply <spec.json|-> (--ops '<json>' | --ops-file ops.json) [-o out.json | --in-place]
+  anot8 share <spec.json|-> [--app-url <url>]    Print a #spec=<base64url> shareable URL
   anot8 schema [spec|ops]                        Print the JSON Schema for specs (or edit ops)
   anot8 mcp                                      Run the local stdio MCP server
 
 Image paths in a spec resolve relative to the spec file.`;
 
 class UsageError extends Error {}
+
+const VALID_FORMATS = new Set<MarkdownExportFormat>(['list', 'table', 'checklist', 'report']);
+
+function parseFormatFlag(value: string | undefined): MarkdownExportFormat {
+  if (!value) return 'list';
+  if (!VALID_FORMATS.has(value as MarkdownExportFormat)) {
+    throw new UsageError(`--format must be one of: list, table, checklist, report (got "${value}")`);
+  }
+  return value as MarkdownExportFormat;
+}
 
 async function readJson(file: string): Promise<{ data: unknown; baseDir: string }> {
   const text =
@@ -70,10 +92,12 @@ function parseCommandArgs(args: string[]) {
       options: {
         out: { type: 'string', short: 'o' },
         md: { type: 'string' },
+        format: { type: 'string' },
         scale: { type: 'string' },
         ops: { type: 'string' },
         'ops-file': { type: 'string' },
         'in-place': { type: 'boolean' },
+        'app-url': { type: 'string' },
         help: { type: 'boolean', short: 'h' },
       },
     });
@@ -100,14 +124,8 @@ async function main(argv: string[]): Promise<void> {
 
     case 'init': {
       const image = requirePositional(positionals, 'image');
-      const { width, height } = await inspectImage(image);
       const out = values.out ?? `${image.replace(/\.[^./\\]+$/, '')}.anot8.json`;
-      const outDir = path.dirname(path.resolve(out));
-      const imagePath = path.resolve(image);
-      // Keep specs portable with a relative path, unless the two only share the filesystem root.
-      const source =
-        outDir.split(path.sep)[1] === imagePath.split(path.sep)[1] ? path.relative(outDir, imagePath) : imagePath;
-      const spec = { version: SPEC_VERSION, image: { source, width, height }, annotations: [] };
+      const { spec, width, height } = await buildStarterSpec({ image, outPath: out });
       await writeFile(out, `${JSON.stringify(spec, null, 2)}\n`);
       print({ spec: out, width, height });
       return;
@@ -117,8 +135,11 @@ async function main(argv: string[]): Promise<void> {
       const file = requirePositional(positionals, 'spec.json');
       const { data, baseDir } = await readJson(file);
       const scale = values.scale !== undefined ? Number(values.scale) : undefined;
-      if (scale !== undefined && !(scale > 0)) throw new UsageError('--scale must be a positive number');
-      const result = await renderSpec(data, { baseDir, scale });
+      if (scale !== undefined && (!(scale > 0) || scale > 8)) {
+        throw new UsageError('--scale must be a positive number up to 8');
+      }
+      const markdownFormat = parseFormatFlag(values.format);
+      const result = await renderSpec(data, { baseDir, scale, markdownFormat });
       const out = values.out ?? (file === '-' ? 'anot8.png' : file.replace(/(\.anot8)?\.json$/i, '') + '.png');
       await writeFile(out, result.png);
       if (values.md) await writeFile(values.md, result.markdown);
@@ -127,8 +148,25 @@ async function main(argv: string[]): Promise<void> {
         width: result.width,
         height: result.height,
         ...(values.md ? { markdown: values.md } : {}),
-        annotations: result.compiled.annotations.map((a) => ({ id: a.id, type: a.geometry.type, index: a.index })),
+        annotations: result.annotationSummaries,
       });
+      return;
+    }
+
+    case 'markdown': {
+      const file = requirePositional(positionals, 'spec.json');
+      const { data, baseDir } = await readJson(file);
+      const format = parseFormatFlag(values.format);
+      const spec = parseSpec(data);
+      const dims = await inspectImageForSpec(spec, baseDir);
+      const compiled = compileSpec(spec, dims);
+      const markdown = renderSpecMarkdown(compiled, format);
+      if (values.out) {
+        await writeFile(values.out, markdown);
+        print({ output: values.out, format, annotations: summarizeCompiledAnnotations(compiled) });
+      } else {
+        print({ format, markdown, annotations: summarizeCompiledAnnotations(compiled) });
+      }
       return;
     }
 
@@ -136,12 +174,8 @@ async function main(argv: string[]): Promise<void> {
       const file = requirePositional(positionals, 'spec.json');
       const { data, baseDir } = await readJson(file);
       const spec = parseSpec(data);
-      const dims = await inspectImage(spec.image.source, baseDir).catch(() => undefined);
-      const issues = validateSpec(spec, dims);
-      if (!dims && !spec.image.width) {
-        issues.push({ path: 'image.source', message: `Could not load image "${spec.image.source}"` });
-      }
-      if (issues.length > 0) throw new SpecError(issues);
+      const dims = await inspectImageForSpec(spec, baseDir);
+      compileSpec(spec, dims);
       print({ valid: true });
       return;
     }
@@ -152,7 +186,7 @@ async function main(argv: string[]): Promise<void> {
       if (!values.ops && !values['ops-file']) throw new UsageError('Pass --ops \'<json>\' or --ops-file <file>');
       const opsData = values.ops ? parseOpsFlag(values.ops) : (await readJson(values['ops-file']!)).data;
       const spec = parseSpec(data);
-      const dims = await inspectImage(spec.image.source, baseDir).catch(() => undefined);
+      const dims = await inspectImageForSpec(spec, baseDir);
       const { spec: next, addedIds } = applyOps(spec, Array.isArray(opsData) ? opsData : [opsData], dims);
       const target = values['in-place'] ? (file === '-' ? undefined : file) : values.out;
       if (target) {
@@ -161,6 +195,16 @@ async function main(argv: string[]): Promise<void> {
       } else {
         print(next);
       }
+      return;
+    }
+
+    case 'share': {
+      const file = requirePositional(positionals, 'spec.json');
+      const { data, baseDir } = await readJson(file);
+      const shareable = await prepareShareableSpec(data, baseDir);
+      const hash = encodeSpecHash(shareable);
+      const appUrl = (values['app-url'] ?? 'https://anot8.ksprashu.dev/').replace(/#.*$/, '');
+      print({ hash, url: `${appUrl}${hash}` });
       return;
     }
 

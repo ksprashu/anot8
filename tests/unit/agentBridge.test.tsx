@@ -81,11 +81,14 @@ describe('AgentSession', () => {
     expect(host.getState().annotations.map((a) => a.id)).toEqual(['login', 'a1']);
   });
 
-  it('leaves state untouched when a spec is invalid', async () => {
+  it('leaves state untouched when a spec is invalid or uses an unsafe browser URL scheme', async () => {
     const { host, actions, session } = createHost();
     await expect(
       session.loadSpec({ ...SPEC, annotations: [{ type: 'pin', at: '@nope' }] })
     ).rejects.toMatchObject({ issues: [{ path: 'annotations[0].at' }] });
+    await expect(
+      session.loadSpec({ ...SPEC, image: { source: 'javascript:alert(1)' } })
+    ).rejects.toMatchObject({ issues: [{ path: 'image.source' }] });
     expect(actions).toEqual([]);
     expect(host.getState().image).toBeNull();
   });
@@ -121,6 +124,7 @@ describe('spec hash and detection', () => {
     expect(hash).toMatch(/^#spec=[A-Za-z0-9_-]+$/);
     expect(decodeSpecHash(hash)).toEqual(spec);
     expect(decodeSpecHash('#other')).toBeNull();
+    expect(() => decodeSpecHash('#spec=!!!not-base64!!!')).toThrow(/base64url/);
   });
 
   it('detects spec-shaped values', () => {
