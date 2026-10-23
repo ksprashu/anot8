@@ -5,8 +5,8 @@ Anot8 can be driven by AI agents and scripts as a **parametric** screenshot edit
 | Surface | Use it when | How |
 |---|---|---|
 | **Agent Skill** (`anot8`) | Any skill-aware agent (Claude Code, Gemini CLI, Codex, Cursor, …) | `npx skills add ksprashu/anot8` |
-| **MCP server** (stdio) | Agents that speak MCP | `npx -y anot8 mcp` as a local subprocess. No network listener. |
-| **CLI** (`anot8`) | Scripts, CI, any agent with a shell | `npx -y anot8 <cmd>` or `npm install -g anot8` |
+| **MCP server** (stdio) | Agents that speak MCP | `npx -y @ksprashu/anot8 mcp` as a local subprocess. No network listener. |
+| **CLI** (`anot8`) | Scripts, CI, any agent with a shell | `npx -y @ksprashu/anot8 <cmd>` or `npm install -g @ksprashu/anot8` |
 | **Browser bridge** (`window.anot8`) | Agents that drive Chrome, or handing a result to a person to tweak | Open the app; call `window.anot8.*` |
 
 All surfaces share the same spec, compiler, and renderer (Canvas2D in the browser, `@napi-rs/canvas` in Node), so a spec renders the same everywhere.
@@ -72,7 +72,7 @@ In `update.set`, `null` removes a field. Annotations without an `id` get stable 
 ## CLI
 
 ```bash
-npm install -g anot8                  # or run any command as `npx -y anot8 <cmd>`
+npm install -g @ksprashu/anot8                  # or run any command as `npx -y @ksprashu/anot8 <cmd>`
 
 anot8 inspect shot.png                # {"width":2880,"height":1800}: placing coordinates needs this
 anot8 init shot.png                   # writes shot.anot8.json with the image dimensions
@@ -91,13 +91,13 @@ Output is JSON on stdout. Errors are JSON on stderr, with exit code 1 for an inv
 Register the published package as a stdio server:
 
 ```bash
-claude mcp add -s user anot8 -- npx -y anot8 mcp     # Claude Code
-gemini mcp add -s user anot8 npx -y anot8 mcp         # Gemini CLI
-codex mcp add anot8 -- npx -y anot8 mcp               # Codex CLI
+claude mcp add -s user anot8 -- npx -y @ksprashu/anot8 mcp     # Claude Code
+gemini mcp add -s user anot8 npx -y @ksprashu/anot8 mcp         # Gemini CLI
+codex mcp add anot8 -- npx -y @ksprashu/anot8 mcp               # Codex CLI
 ```
 
 ```json
-{ "mcpServers": { "anot8": { "command": "npx", "args": ["-y", "anot8", "mcp"] } } }
+{ "mcpServers": { "anot8": { "command": "npx", "args": ["-y", "@ksprashu/anot8", "mcp"] } } }
 ```
 
 Inside this repo, `.mcp.json` points at the local build (`node dist-cli/anot8.js mcp`) instead, so run `npm run build:cli` after changing `cli/` or `src/`.
@@ -129,7 +129,7 @@ npx skills add ksprashu/anot8                    # interactive: choose agents an
 npx skills add ksprashu/anot8 -g -a claude-code -a gemini-cli -a codex -y
 ```
 
-The installer copies only the skill folder. The skill itself has no code: it uses connected MCP tools if present, otherwise `anot8` on `PATH`, a local build when run inside this repo, or `npx -y anot8@latest`. That way the same skill works after a plain install, in CI, and while developing Anot8.
+The installer copies only the skill folder. The skill itself has no code: it uses connected MCP tools if present, otherwise `anot8` on `PATH`, a local build when run inside this repo, or `npx -y @ksprashu/anot8@latest`. That way the same skill works after a plain install, in CI, and while developing Anot8.
 
 Within this repo, `.claude/skills/` and `.agents/skills/` are symlinks to `skills/`, so Claude Code and `.agents`-aware harnesses pick up the skills without installing them. `skills/cloudflare-domain` is marked `metadata.internal: true` and is not offered by `npx skills add`.
 

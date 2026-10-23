@@ -1,5 +1,5 @@
 {
-  "name": "anot8",
+  "name": "@ksprashu/anot8",
   "version": "1.0.0",
   "description": "Parametric screenshot annotation: CLI, stdio MCP server and agent skill for Anot8",
   "license": "Apache-2.0",

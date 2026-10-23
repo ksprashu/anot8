@@ -211,7 +211,7 @@ App icons are generated from `public/logo.svg` and `scripts/logo-maskable.svg` w
 
 ## 🤖 Agent Usage (CLI, MCP, Browser)
 
-AI agents and scripts can use Anot8 as a parametric editor. They describe annotations as a JSON spec, render it headlessly, inspect the returned preview and pixel bounding boxes, and adjust with edit ops. Everything runs locally: a CLI and stdio MCP server published to npm as [`anot8`](https://www.npmjs.com/package/anot8), an agent skill in [`skills/anot8/SKILL.md`](skills/anot8/SKILL.md), and a `window.anot8` bridge in the app.
+AI agents and scripts can use Anot8 as a parametric editor. They describe annotations as a JSON spec, render it headlessly, inspect the returned preview and pixel bounding boxes, and adjust with edit ops. Everything runs locally: a CLI and stdio MCP server published to npm as [`@ksprashu/anot8`](https://www.npmjs.com/package/@ksprashu/anot8), an agent skill in [`skills/anot8/SKILL.md`](skills/anot8/SKILL.md), and a `window.anot8` bridge in the app.
 
 ### Use Anot8 with your agent
 
@@ -221,15 +221,15 @@ No clone needed. Install the skill into whichever agents you use (Claude Code, G
 npx skills add ksprashu/anot8            # pick agents interactively; add -g for all projects
 ```
 
-Then ask your agent to annotate or redact a screenshot. The skill runs the engine with `npx -y anot8` (Node.js 20+), so there is nothing else to install. For tools that return the rendered PNG straight into the agent's context, also register the MCP server:
+Then ask your agent to annotate or redact a screenshot. The skill runs the engine with `npx -y @ksprashu/anot8` (Node.js 20+), so there is nothing else to install. For tools that return the rendered PNG straight into the agent's context, also register the MCP server:
 
 ```bash
-claude mcp add -s user anot8 -- npx -y anot8 mcp     # Claude Code
-gemini mcp add -s user anot8 npx -y anot8 mcp         # Gemini CLI
-codex mcp add anot8 -- npx -y anot8 mcp               # Codex CLI
+claude mcp add -s user anot8 -- npx -y @ksprashu/anot8 mcp     # Claude Code
+gemini mcp add -s user anot8 npx -y @ksprashu/anot8 mcp         # Gemini CLI
+codex mcp add anot8 -- npx -y @ksprashu/anot8 mcp               # Codex CLI
 ```
 
-Any other MCP client: `{ "mcpServers": { "anot8": { "command": "npx", "args": ["-y", "anot8", "mcp"] } } }`.
+Any other MCP client: `{ "mcpServers": { "anot8": { "command": "npx", "args": ["-y", "@ksprashu/anot8", "mcp"] } } }`.
 
 To move between agent and browser, `anot8 share spec.json` prints a link that opens the spec in the web app, and dropping a `.anot8.json` file onto the app loads it.
 
@@ -248,7 +248,7 @@ To move between agent and browser, `anot8 share spec.json` prints a link that op
 ```
 
 ```bash
-npm install -g anot8       # or prefix each command with npx -y
+npm install -g @ksprashu/anot8       # or prefix each command with npx -y
 anot8 inspect shot.png
 anot8 init shot.png -o shot.anot8.json
 anot8 render shot.anot8.json -o out.png --md notes.md --format report
