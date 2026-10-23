@@ -4,9 +4,9 @@ Anot8 can be driven by AI agents and scripts as a **parametric** screenshot edit
 
 | Surface | Use it when | How |
 |---|---|---|
-| **Agent Skill** (`anot8`) | Claude Code / skill-aware agents | `.claude/skills/anot8/SKILL.md` (auto-discovered in this repo) |
-| **MCP server** (stdio) | Agents that speak MCP (Claude Code, Claude Desktop, …) | `anot8 mcp` as a local subprocess. No network listener. |
-| **CLI** (`anot8`) | Scripts, CI, any agent with a shell | `npm run build:cli && npm link` |
+| **Agent Skill** (`anot8`) | Any skill-aware agent (Claude Code, Gemini CLI, Codex, Cursor, …) | `npx skills add ksprashu/anot8` |
+| **MCP server** (stdio) | Agents that speak MCP | `npx -y anot8 mcp` as a local subprocess. No network listener. |
+| **CLI** (`anot8`) | Scripts, CI, any agent with a shell | `npx -y anot8 <cmd>` or `npm install -g anot8` |
 | **Browser bridge** (`window.anot8`) | Agents that drive Chrome, or handing a result to a person to tweak | Open the app; call `window.anot8.*` |
 
 All surfaces share the same spec, compiler, and renderer (Canvas2D in the browser, `@napi-rs/canvas` in Node), so a spec renders the same everywhere.
@@ -72,7 +72,7 @@ In `update.set`, `null` removes a field. Annotations without an `id` get stable 
 ## CLI
 
 ```bash
-npm run build:cli && npm link          # installs the `anot8` command locally
+npm install -g anot8                  # or run any command as `npx -y anot8 <cmd>`
 
 anot8 inspect shot.png                # {"width":2880,"height":1800}: placing coordinates needs this
 anot8 init shot.png                   # writes shot.anot8.json with the image dimensions
@@ -88,11 +88,19 @@ Output is JSON on stdout. Errors are JSON on stderr, with exit code 1 for an inv
 
 ## MCP server
 
-The project `.mcp.json` already registers the server for Claude Code after `npm run build:cli`. For other clients:
+Register the published package as a stdio server:
+
+```bash
+claude mcp add -s user anot8 -- npx -y anot8 mcp     # Claude Code
+gemini mcp add -s user anot8 npx -y anot8 mcp         # Gemini CLI
+codex mcp add anot8 -- npx -y anot8 mcp               # Codex CLI
+```
 
 ```json
-{ "mcpServers": { "anot8": { "command": "node", "args": ["/path/to/anot8/dist-cli/anot8.js", "mcp"] } } }
+{ "mcpServers": { "anot8": { "command": "npx", "args": ["-y", "anot8", "mcp"] } } }
 ```
+
+Inside this repo, `.mcp.json` points at the local build (`node dist-cli/anot8.js mcp`) instead, so run `npm run build:cli` after changing `cli/` or `src/`.
 
 ### Tools
 
@@ -112,9 +120,20 @@ Each spec tool takes either an inline `spec` object or a `specPath`.
 - **Resources**: `anot8://guide` (usage instructions), `anot8://schema/spec` (DocumentSpec v1 JSON Schema), `anot8://schema/ops` (SpecOp[] JSON Schema).
 - **Prompts**: `annotate-screenshot` (`image`, `goal?`, `output?`) and `redact-screenshot` (`image`, `output?`).
 
-## Agent Skill (`.claude/skills/anot8/SKILL.md`)
+## Agent Skill (`skills/anot8/SKILL.md`)
 
-For Claude Code and skill-aware agents, `.claude/skills/anot8/SKILL.md` packages the closed-loop workflow (`inspect` → `author spec with @id anchors` → `render & inspect preview + bounds` → `apply_ops` → `render`), coordinate and anchor recipes, badge numbering rules, and CLI/MCP reference.
+`skills/anot8/SKILL.md` follows the [`npx skills`](https://github.com/vercel-labs/skills) layout, so one definition installs into every supported harness:
+
+```bash
+npx skills add ksprashu/anot8                    # interactive: choose agents and scope
+npx skills add ksprashu/anot8 -g -a claude-code -a gemini-cli -a codex -y
+```
+
+The installer copies only the skill folder. The skill itself has no code: it uses connected MCP tools if present, otherwise `anot8` on `PATH`, a local build when run inside this repo, or `npx -y anot8@latest`. That way the same skill works after a plain install, in CI, and while developing Anot8.
+
+Within this repo, `.claude/skills/` and `.agents/skills/` are symlinks to `skills/`, so Claude Code and `.agents`-aware harnesses pick up the skills without installing them. `skills/cloudflare-domain` is marked `metadata.internal: true` and is not offered by `npx skills add`.
+
+It packages the closed-loop workflow (`inspect` → `author spec with @id anchors` → `render & inspect preview + bounds` → `apply_ops` → `render`), coordinate and anchor recipes, badge numbering rules, and CLI/MCP reference.
 
 ## Browser bridge
 

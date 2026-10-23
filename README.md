@@ -96,7 +96,7 @@ Developers, technical writers, support engineers, and product teams constantly c
 ### 🤖 Parametric Editing for AI Agents
 - **Anot8 spec**: A JSON document format (`.anot8.json`) that describes the image, frame, and annotations, with percentage coordinates and live anchors such as `"@submit.right"`.
 - **Headless rendering**: The same Canvas2D exporter runs in Node via `@napi-rs/canvas`, so the CLI and MCP server produce the exact same PNG as the Export button.
-- **MCP Server + Agent Skill**: Stdio MCP server (`anot8_schema`, `anot8_inspect_image`, `anot8_init_spec`, `anot8_validate`, `anot8_apply_ops`, `anot8_render`, `anot8_markdown`, `anot8_share_url`, plus resources and prompts) paired with `.claude/skills/anot8/SKILL.md` for closed-loop visual self-check.
+- **MCP Server + Agent Skill**: Stdio MCP server (`anot8_schema`, `anot8_inspect_image`, `anot8_init_spec`, `anot8_validate`, `anot8_apply_ops`, `anot8_render`, `anot8_markdown`, `anot8_share_url`, plus resources and prompts) paired with `skills/anot8/SKILL.md` for closed-loop visual self-check.
 - **Local only**: A CLI, a stdio MCP server, an agent skill, and a `window.anot8` browser bridge. Nothing is hosted. See [Agent Usage](#-agent-usage-cli-mcp-browser).
 - **Round trip with people**: Save the current canvas as a spec, share a `#spec=<base64url>` link, or drop/paste a spec onto the app to load it.
 
@@ -155,7 +155,7 @@ The reducer, geometry math, markdown serializer, and Canvas2D exporter form a **
 | `src/core/node/` | Node render backend (`@napi-rs/canvas`), SSRF/bounds guards, `buildStarterSpec`, and `renderSpec` (PNG + markdown + bounds) |
 | `cli/` | The `anot8` CLI and the stdio MCP server (8 tools, 3 resources, 2 prompts), bundled by tsup to `dist-cli/` |
 | `src/bridge/` | `window.anot8` session, `#spec=` links, and spec drop/paste in the app |
-| `.claude/skills/anot8/` | Agent skill teaching the closed-loop visual annotation and redaction workflow |
+| `skills/` | Cross-harness agent skills (`npx skills` layout); `.claude/skills/` and `.agents/skills/` symlink here |
 
 ---
 
@@ -211,7 +211,29 @@ App icons are generated from `public/logo.svg` and `scripts/logo-maskable.svg` w
 
 ## 🤖 Agent Usage (CLI, MCP, Browser)
 
-AI agents and scripts can use Anot8 as a parametric editor. They describe annotations as a JSON spec, render it headlessly, inspect the returned preview and pixel bounding boxes, and adjust with edit ops. Everything runs locally: a CLI, a stdio MCP server (`anot8 mcp`) configured in `.mcp.json`, an agent skill in `.claude/skills/anot8/SKILL.md`, and a `window.anot8` bridge in the app.
+AI agents and scripts can use Anot8 as a parametric editor. They describe annotations as a JSON spec, render it headlessly, inspect the returned preview and pixel bounding boxes, and adjust with edit ops. Everything runs locally: a CLI and stdio MCP server published to npm as [`anot8`](https://www.npmjs.com/package/anot8), an agent skill in [`skills/anot8/SKILL.md`](skills/anot8/SKILL.md), and a `window.anot8` bridge in the app.
+
+### Use Anot8 with your agent
+
+No clone needed. Install the skill into whichever agents you use (Claude Code, Gemini CLI, Codex, Cursor, Copilot, and [others](https://github.com/vercel-labs/skills#supported-agents)):
+
+```bash
+npx skills add ksprashu/anot8            # pick agents interactively; add -g for all projects
+```
+
+Then ask your agent to annotate or redact a screenshot. The skill runs the engine with `npx -y anot8` (Node.js 20+), so there is nothing else to install. For tools that return the rendered PNG straight into the agent's context, also register the MCP server:
+
+```bash
+claude mcp add -s user anot8 -- npx -y anot8 mcp     # Claude Code
+gemini mcp add -s user anot8 npx -y anot8 mcp         # Gemini CLI
+codex mcp add anot8 -- npx -y anot8 mcp               # Codex CLI
+```
+
+Any other MCP client: `{ "mcpServers": { "anot8": { "command": "npx", "args": ["-y", "anot8", "mcp"] } } }`.
+
+To move between agent and browser, `anot8 share spec.json` prints a link that opens the spec in the web app, and dropping a `.anot8.json` file onto the app loads it.
+
+### Spec and CLI
 
 ```json
 {
@@ -226,7 +248,7 @@ AI agents and scripts can use Anot8 as a parametric editor. They describe annota
 ```
 
 ```bash
-npm run build:cli && npm link
+npm install -g anot8       # or prefix each command with npx -y
 anot8 inspect shot.png
 anot8 init shot.png -o shot.anot8.json
 anot8 render shot.anot8.json -o out.png --md notes.md --format report
@@ -250,14 +272,14 @@ anot8 share shot.anot8.json
 | **Resource** | `anot8://guide`, `anot8://schema/spec`, `anot8://schema/ops` | Guide and JSON Schemas exposed as MCP resources |
 | **Prompt** | `annotate-screenshot`, `redact-screenshot` | Guided prompts for closed-loop visual callouts and privacy redaction |
 
-See **[docs/agent-usage.md](docs/agent-usage.md)** and **[.claude/skills/anot8/SKILL.md](.claude/skills/anot8/SKILL.md)** for the full spec reference (anchors, percentages, hex colors, text labels, crop and padding), edit ops, MCP server, and browser bridge.
+See **[docs/agent-usage.md](docs/agent-usage.md)** and **[skills/anot8/SKILL.md](skills/anot8/SKILL.md)** for the full spec reference (anchors, percentages, hex colors, text labels, crop and padding), edit ops, MCP server, and browser bridge.
 
 ---
 
 ## 🚀 Getting Started & Local Development
 
 ### Prerequisites
-- **Node.js**: `v18.0.0` or higher (Node 20+ / 22+ recommended)
+- **Node.js**: `v20` or higher
 - **npm**: `v9.0.0` or higher
 
 ### Installation & Run

@@ -12,7 +12,7 @@ This roadmap tracks the completed architecture tracks and feature milestones for
   - Declarative `.anot8.json` v1 spec with pixel/percentage coordinates and live `@id.<position>` anchors.
   - Local `anot8` CLI (`inspect`, `init`, `render`, `markdown`, `validate`, `apply`, `share`, `schema`, `mcp`).
   - Local stdio MCP server (`anot8_schema`, `anot8_inspect_image`, `anot8_init_spec`, `anot8_validate`, `anot8_apply_ops`, `anot8_render`, `anot8_markdown`, `anot8_share_url`, 3 resources, 2 prompts).
-  - Agent skill (`.claude/skills/anot8/SKILL.md`) and `window.anot8` browser bridge.
+  - Agent skill (`skills/anot8/SKILL.md`) and `window.anot8` browser bridge.
 
 ---
 
@@ -24,4 +24,4 @@ This roadmap tracks the completed architecture tracks and feature milestones for
 | **R1–R5: Paste, Zoom & Toolbar** | Replace/Keep/Layer paste modal, quantized 10-step wheel zoom, responsive toolbar, stroke/fill presets | Completed | `src/math/coordinates.ts`, `src/components/toolbar/` |
 | **F1–F4: Spotlight, Redact & DPI** | Aerodynamic 30° arrows with casing, additive spotlight mask, destructive Gaussian blur, 4K scalable badges | Completed | `src/math/geometry.ts`, `src/export/canvasExporter.ts` |
 | **PWA & Static Hosting** | Offline-capable Workbox service worker, update toast, web manifest, GitHub Pages CI/CD | Completed | `vite.config.ts`, `.github/workflows/deploy-pages.yml` |
-| **Parametric Spec, CLI, MCP & Skill** | `.anot8.json` v1 compiler/ops, `@napi-rs/canvas` backend, stdio MCP server, `.claude/skills/anot8/SKILL.md`, `window.anot8` | Completed | `src/spec/`, `src/core/node/`, `cli/`, `src/bridge/`, `docs/agent-usage.md` |
+| **Parametric Spec, CLI, MCP & Skill** | `.anot8.json` v1 compiler/ops, `@napi-rs/canvas` backend, stdio MCP server, `skills/anot8/SKILL.md`, `window.anot8` | Completed | `src/spec/`, `src/core/node/`, `cli/`, `src/bridge/`, `docs/agent-usage.md` |

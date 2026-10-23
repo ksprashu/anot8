@@ -11,7 +11,7 @@
 - **GitHub Repository**: [https://github.com/ksprashu/anot8](https://github.com/ksprashu/anot8)
 - **Live GitHub Pages App**: [https://anot8.ksprashu.dev](https://anot8.ksprashu.dev) (redirected from `https://ksprashu.dev/anot8`)
 - **Project Banner**: Committed to [`docs/images/banner.png`](images/banner.png) and embedded at the top of [`README.md`](../README.md).
-- **Agent Usage Guide**: [`docs/agent-usage.md`](agent-usage.md) and [`.claude/skills/anot8/SKILL.md`](../.claude/skills/anot8/SKILL.md).
+- **Agent Usage Guide**: [`docs/agent-usage.md`](agent-usage.md) and [`skills/anot8/SKILL.md`](../skills/anot8/SKILL.md).
 
 ---
 
@@ -38,7 +38,7 @@
 - **Spec (`src/spec/`)**: Declarative `.anot8.json` v1 schema supporting pixel and percentage coordinates, `@id.<position>` anchors, custom hex colors, text labels, spotlight highlights, destructive blur redactions, and crop/padding frames.
 - **CLI (`cli/anot8.ts`)**: `inspect`, `init`, `render`, `markdown`, `validate`, `apply`, `share`, `schema`, and `mcp`.
 - **MCP Server (`cli/mcp.ts`)**: Exposes 8 tools (`anot8_schema`, `anot8_inspect_image`, `anot8_init_spec`, `anot8_validate`, `anot8_apply_ops`, `anot8_render`, `anot8_markdown`, `anot8_share_url`), 3 resources, and 2 prompts over stdio.
-- **Agent Skill (`.claude/skills/anot8/SKILL.md`)**: Guides agents through the closed-loop visual self-check workflow.
+- **Agent Skill (`skills/anot8/SKILL.md`)**: Guides agents through the closed-loop visual self-check workflow.
 
 ---
 
