@@ -22,16 +22,28 @@ export type AnchorPosition = (typeof ANCHOR_POSITIONS)[number];
 
 export const ANCHOR_PATTERN = new RegExp(`^@([A-Za-z0-9_-]+)(?:\\.(${ANCHOR_POSITIONS.join('|')}))?$`);
 const ID_PATTERN = /^[A-Za-z0-9_-]+$/;
-const PERCENT_PATTERN = /^-?\d+(\.\d+)?%$/;
+const PERCENT_PATTERN = /^-?\d{1,6}(\.\d{1,12})?%$/;
+const NONNEG_PERCENT_PATTERN = /^\d{1,6}(\.\d{1,12})?%$/;
+export const MAX_COORD = 100_000;
+export const MAX_ANNOTATIONS = 1000;
+
+export function fileNameFromSource(source: string): string {
+  if (source.startsWith('data:')) return 'spec-image.png';
+  const last = source.split(/[?#]/)[0].split(/[/\\]/).pop();
+  return last || 'spec-image.png';
+}
 
 const Coord = z
-  .union([z.number(), z.string().regex(PERCENT_PATTERN, 'Use a number of pixels or a percentage string like "25%"')])
+  .union([
+    z.number().finite().min(-MAX_COORD).max(MAX_COORD),
+    z.string().regex(PERCENT_PATTERN, 'Use a number of pixels or a percentage string like "25%"'),
+  ])
   .describe('Pixels in the original image, or a percentage of image width (x, width) / height (y, height), e.g. "25%"');
 
 const Length = z
   .union([
-    z.number().nonnegative(),
-    z.string().regex(PERCENT_PATTERN, 'Use a number of pixels or a percentage string like "25%"'),
+    z.number().finite().nonnegative().max(MAX_COORD),
+    z.string().regex(NONNEG_PERCENT_PATTERN, 'Use a non-negative number of pixels or a percentage string like "25%"'),
   ])
   .describe('Non-negative pixels, or a percentage of image width/height, e.g. "50%"');
 
@@ -47,8 +59,8 @@ export const PointSchema = z
     z
       .strictObject({
         anchor: AnchorRef,
-        dx: z.number().optional().describe('Horizontal offset in pixels from the anchor point'),
-        dy: z.number().optional().describe('Vertical offset in pixels from the anchor point'),
+        dx: z.number().finite().min(-MAX_COORD).max(MAX_COORD).optional().describe('Horizontal offset in pixels from the anchor point'),
+        dy: z.number().finite().min(-MAX_COORD).max(MAX_COORD).optional().describe('Vertical offset in pixels from the anchor point'),
       })
       .describe('Anchor with a pixel offset'),
   ])
@@ -130,7 +142,12 @@ export const FrameSpecSchema = z
   .strictObject({
     crop: z.strictObject(rect).optional().describe('Region of the image to keep'),
     padding: z.number().nonnegative().max(2000).optional().describe('Pixels added on every side'),
-    background: z.string().optional().describe('CSS color for the padding, e.g. "#0F172A"'),
+    background: z
+      .string()
+      .max(64)
+      .regex(/^(#[0-9a-fA-F]{3,8}|rgba?\([^)]+\)|hsla?\([^)]+\)|[a-zA-Z]+)$/, 'Use a valid CSS color like "#0F172A"')
+      .optional()
+      .describe('CSS color for the padding, e.g. "#0F172A"'),
   })
   .describe('Output framing: crop, then pad');
 
@@ -153,7 +170,10 @@ export const DocumentSpecSchema = z
       })
       .optional()
       .describe('Style applied to annotations that do not set their own'),
-    annotations: z.array(AnnotationSpecSchema).describe('Drawn in order; numbered callouts get badges 1..N in this order'),
+    annotations: z
+      .array(AnnotationSpecSchema)
+      .max(MAX_ANNOTATIONS)
+      .describe('Drawn in order; numbered callouts get badges 1..N in this order'),
   })
   .describe('Anot8 document: one screenshot plus its annotations');
 

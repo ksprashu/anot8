@@ -14,6 +14,8 @@ import {
   parseSpec,
 } from './schema';
 
+export const FORBIDDEN_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+
 export const OpSchema = z.discriminatedUnion('op', [
   z
     .strictObject({
@@ -61,6 +63,15 @@ export interface ApplyOpsResult {
  */
 export function applyOps(specInput: unknown, opsInput: unknown, dims?: ImageDimensions): ApplyOpsResult {
   const spec = parseSpec(specInput);
+  // Checked before parsing: zod silently drops "__proto__" from records.
+  if (Array.isArray(opsInput)) {
+    opsInput.forEach((op, n) => {
+      const set = (op as { set?: unknown } | null)?.set;
+      if (!set || typeof set !== 'object') return;
+      const key = Object.keys(set).find((k) => FORBIDDEN_KEYS.has(k));
+      if (key) throw new SpecError([{ path: `ops[${n}].set.${key}`, message: `Forbidden property key "${key}"` }]);
+    });
+  }
   const parsedOps = OpsSchema.safeParse(opsInput);
   if (!parsedOps.success) {
     throw new SpecError(
@@ -98,6 +109,9 @@ export function applyOps(specInput: unknown, opsInput: unknown, dims?: ImageDime
         const i = findIndex(op.id, `${path}.id`);
         const merged: Record<string, unknown> = { ...annotations[i] };
         for (const [key, value] of Object.entries(op.set)) {
+          if (key === 'id' && value === null) {
+            throw new SpecError([{ path: `${path}.set.id`, message: 'Cannot remove annotation id' }]);
+          }
           if (value === null) delete merged[key];
           else merged[key] = value;
         }

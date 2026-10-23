@@ -23,9 +23,10 @@ function issuesOf(fn: () => unknown) {
 }
 
 describe('compileSpec', () => {
-  it('resolves pixel and percentage coordinates', () => {
-    const doc = compileSpec(baseSpec([{ type: 'box', x: '10%', y: '20%', width: '50%', height: 100 }]), dims);
-    expect(doc.annotations[0].geometry).toEqual({ type: 'box', x: 100, y: 100, width: 500, height: 100 });
+  it('resolves pixel and percentage coordinates, including high-precision decimals', () => {
+    const doc = compileSpec(baseSpec([{ type: 'box', x: '10%', y: '20%', width: '33.333333%', height: 100 }]), dims);
+    expect(doc.annotations[0].geometry).toMatchObject({ type: 'box', x: 100, y: 100, height: 100 });
+    expect((doc.annotations[0].geometry as BoxGeometry).width).toBeCloseTo(333.33333, 4);
   });
 
   it('converts ellipse bounding boxes to center/radius', () => {
@@ -260,6 +261,18 @@ describe('applyOps', () => {
     const input = JSON.parse(JSON.stringify(spec)) as DocumentSpec;
     applyOps(input, [{ op: 'update', id: 'login', set: { x: 1 } }], dims);
     expect(input).toEqual(spec);
+  });
+
+  it('rejects prototype-polluting keys and id removal in update.set', () => {
+    const badSet = JSON.parse('{"__proto__":{"polluted":true}}') as Record<string, unknown>;
+    expect(issuesOf(() => applyOps(spec, [{ op: 'update', id: 'login', set: badSet }], dims))[0]).toEqual({
+      path: 'ops[0].set.__proto__',
+      message: 'Forbidden property key "__proto__"',
+    });
+    expect(issuesOf(() => applyOps(spec, [{ op: 'update', id: 'login', set: { id: null } }], dims))[0]).toEqual({
+      path: 'ops[0].set.id',
+      message: 'Cannot remove annotation id',
+    });
   });
 });
 
