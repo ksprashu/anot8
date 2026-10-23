@@ -1,10 +1,10 @@
 # TEST_READY: Anot8 Master Test Verification Report
 
 **Status**: READY & VERIFIED  
-**Date**: 2026-09-13  
+**Date**: 2026-10-23  
 **Application**: Anot8 Screenshot Annotation & Note-Taking System  
-**Execution Commands**: `npm test` & `npx tsx tests/e2e/test-runner.ts`  
-**Overall Result**: **100% Tests Passing Across All Suites**  
+**Execution Commands**: `npm test`, `npx vitest run --project node`, & `npx tsx tests/e2e/test-runner.ts`  
+**Overall Result**: **100% Tests Passing Across All Suites (84 Files, 1502 Tests)**  
 **Typecheck**: **0 Errors (`tsc --noEmit`)**  
 **Linter**: **0 Errors (`eslint .`)**  
 
@@ -103,6 +103,10 @@ The complete opaque-box test infrastructure and master test suites for **Anot8**
 | `tests/component/ZoomControls.test.tsx` | Zoom toolbar controls & preset selector component tests | Component |
 | `tests/component/ColorPalette.test.tsx` | Stroke width and fill opacity controls component tests | Component |
 | `tests/component/MainToolbar.test.tsx` | Responsive toolbar and tool selection component tests | Component |
+| `tests/unit/spec.test.ts` | Parametric spec v1 schema, percentages, anchors, ops, prototype guards | Unit |
+| `tests/unit/agentBridge.test.tsx` | Browser `window.anot8` session, `#spec=` hash encoding, undo integration | Unit |
+| `tests/node/golden.test.ts` | Headless Node rendering via `@napi-rs/canvas` pixel-diffed against golden PNGs | Node |
+| `tests/node/cli.test.ts` | Built `anot8` CLI, stdio MCP server (8 tools, 3 resources, 2 prompts), and SSRF guards | Node |
 
 ---
 

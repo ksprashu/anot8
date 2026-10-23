@@ -1,52 +1,27 @@
-# Project Roadmap & Dynamic Feature Ledger
+# Anot8 — Master Architecture & Milestone Roadmap
 
-Welcome to the Master Project Roadmap and Chronological Feature Ledger. This portal consolidates all completed core keynote milestones alongside the dynamic custom extension branches developed by our agentic fleet.
-
----
-
-## 1. Project Health Status
-
-::: grid-3
-::: card
-### Core Keynote Trunk
-- Status: **100% Operational**
-- Scenes: **Scene 1 to Scene 6**
-- SLA Compliance: **Sub-150ms**
-:::
-::: card
-### Active Feature Branches
-- Active: **Docs Sync & Archiving**
-- Status: **90% Complete**
-- Hook Status: **Stop Event Active**
-:::
-::: card
-### Extension Backlog
-- Proposed Ideas: **3 Features**
-- High-Impact: **Spatial plot, Rule Tuner**
-- Status: **Ready for Planning**
-:::
-:::
+This roadmap tracks the completed architecture tracks and feature milestones for **Anot8**: a client-side screenshot annotation and split-view Markdown note-taking application with a headless CLI, stdio MCP server, agent skill, and browser bridge.
 
 ---
 
-## 2. Chronological Milestones Ledger
+## 1. System Health & Architecture Tracks
 
-| Milestone Area | Class / Type | Completion Status | Deliverables & Artifacts |
+- **Core Web Application & PWA**: 100% client-side React + TypeScript + Tailwind CSS canvas and SVG overlay engine, installable offline PWA via Workbox, hosted on GitHub Pages (`anot8.ksprashu.dev`).
+- **Portable Rendering Core**: DOM-free state reducer, geometry/badge/text math, Markdown serializer, and injectable `RenderBackend` Canvas2D compositor shared between browser and Node (`@napi-rs/canvas`).
+- **Agent Surfaces (CLI, MCP, Skill, Browser Bridge)**:
+  - Declarative `.anot8.json` v1 spec with pixel/percentage coordinates and live `@id.<position>` anchors.
+  - Local `anot8` CLI (`inspect`, `init`, `render`, `markdown`, `validate`, `apply`, `share`, `schema`, `mcp`).
+  - Local stdio MCP server (`anot8_schema`, `anot8_inspect_image`, `anot8_init_spec`, `anot8_validate`, `anot8_apply_ops`, `anot8_render`, `anot8_markdown`, `anot8_share_url`, 3 resources, 2 prompts).
+  - Agent skill (`.claude/skills/anot8/SKILL.md`) and `window.anot8` browser bridge.
+
+---
+
+## 2. Completed Milestones Ledger
+
+| Milestone | Scope | Status | Key Artifacts |
 | :--- | :--- | :--- | :--- |
-| **Scene 1: Chatbot** | Core Keynote Trunk | [badge:emerald:100% Completed] | Raw ungrounded Gemini gaffe sandbox |
-| **Scene 2: Commute** | Core Keynote Trunk | [badge:emerald:100% Completed] | Calendar MCP & Google Maps grounding tools |
-| **Scene 3: Wardrobe** | Core Keynote Trunk | [badge:emerald:100% Completed] | AlloyDB pgvector styling similarity |
-| **Scene 4: Florist** | Core Keynote Trunk | [badge:emerald:100% Completed] | Model Armor prompt injection input guardrails |
-| **Scene 5: Pet Sitter** | Core Keynote Trunk | [badge:emerald:100% Completed] | Model Armor PII redaction and secure logs |
-| **Scene 6: Showstopper**| Core Keynote Trunk | [badge:emerald:100% Completed] | Diner Black bilateral multi-agent seating negotiation |
-| **Docs Sync Skill** | Active Feature Branch | [badge:indigo:90% In Progress] | Automatic Stop event hook, auto-archiver, HTML timelines |
-| **Rule-Tuning Panel** | Extension Backlog | [badge:slate:0% Pending] | Model Armor toggles for live stage demonstrations |
-| **Spatial Scatter Plot**| Extension Backlog | [badge:slate:0% Pending] | AlloyDB cluster visualizations in SVG |
-| **DB Mode Controller**| Extension Backlog | [badge:slate:0% Pending] | Settings pane to hot-swap DB_MODE |
-
----
-
-## 3. Historic Plan Archives
-
-All historic implementation plans and active checklists are preserved inside our documentation vault:
-* [Docs-Sync Skill Plan](archive/implementation_plan_automated_documentation_sync.html) & [Docs-Sync Active Checklist](archive/task_automated_documentation_sync.html)
+| **M1–M4: Core Platform** | Clipboard ingestion, vector shapes, 1..N badge invariant, split-view Markdown notes, 1:1 PNG export | Completed | `src/state/`, `src/components/`, `src/export/` |
+| **R1–R5: Paste, Zoom & Toolbar** | Replace/Keep/Layer paste modal, quantized 10-step wheel zoom, responsive toolbar, stroke/fill presets | Completed | `src/math/coordinates.ts`, `src/components/toolbar/` |
+| **F1–F4: Spotlight, Redact & DPI** | Aerodynamic 30° arrows with casing, additive spotlight mask, destructive Gaussian blur, 4K scalable badges | Completed | `src/math/geometry.ts`, `src/export/canvasExporter.ts` |
+| **PWA & Static Hosting** | Offline-capable Workbox service worker, update toast, web manifest, GitHub Pages CI/CD | Completed | `vite.config.ts`, `.github/workflows/deploy-pages.yml` |
+| **Parametric Spec, CLI, MCP & Skill** | `.anot8.json` v1 compiler/ops, `@napi-rs/canvas` backend, stdio MCP server, `.claude/skills/anot8/SKILL.md`, `window.anot8` | Completed | `src/spec/`, `src/core/node/`, `cli/`, `src/bridge/`, `docs/agent-usage.md` |

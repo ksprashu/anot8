@@ -85,7 +85,7 @@ tests/
 │   └── zoom_coordinates_adversarial.test.ts
 ├── node/                                   # Vitest "node" project (no jsdom)
 │   ├── golden.test.ts                      # Renders fixtures/specs/* and pixel-diffs fixtures/golden/*
-│   └── cli.test.ts                         # Built anot8 CLI and MCP server over stdio
+│   └── cli.test.ts                         # Built anot8 CLI, MCP server (tools/resources/prompts), SSRF guards
 ├── fixtures/
 │   ├── screen.png                          # 800x500 synthetic UI screenshot
 │   ├── specs/*.anot8.json                  # Fixture specs covering every annotation type, frame, anchors

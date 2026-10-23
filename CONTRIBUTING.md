@@ -94,7 +94,7 @@ Anot8 is designed as a zero-backend, 100% client-side web application structured
 
 The reducer (`src/state/appReducer.ts`), geometry math (`src/math/`), markdown serializer, Canvas2D exporter, spec compiler (`src/spec/`), and Node backend (`src/core/`) must not import React or touch `window`, `document`, or `Image`. ESLint enforces this so the same code renders headlessly in Node. The exporter receives canvases and images through an injectable `RenderBackend`.
 
-The CLI and MCP server (`cli/`) and the browser bridge (`src/bridge/`) are thin layers over the spec. If you change annotation types or styles, update `src/spec/schema.ts`, `compileSpec`, and `toSpec` together, and regenerate the golden images. See [docs/agent-usage.md](docs/agent-usage.md).
+The CLI and MCP server (`cli/`), the agent skill (`.claude/skills/anot8/SKILL.md`), and the browser bridge (`src/bridge/`) are thin layers over the spec. If you change annotation types or styles, update `src/spec/schema.ts`, `compileSpec`, and `toSpec` together, and regenerate the golden images. See [docs/agent-usage.md](docs/agent-usage.md) and [.claude/skills/anot8/SKILL.md](.claude/skills/anot8/SKILL.md).
 
 ---
 

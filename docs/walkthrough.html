@@ -1,346 +1,143 @@
 <!DOCTYPE html>
-<html lang="en" class="dark h-full bg-[#121212]">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anotato — Release & Deployment Report • Google India Summit 2026</title>
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        'google-blue': '#A8C7FA',
-                        'surface-100': '#1E1E1E',
-                        'surface-200': '#2A2A2A',
-                        'safety-green': '#10b981',
-                        'muted-slate': '#94a3b8',
-                        'electric-teal': '#0be6b3',
-                        'neon-indigo': '#A8C7FA',
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        headings: ['Outfit', 'sans-serif'],
-                        console: ['Fira Code', 'monospace'],
-                    },
-                    animation: {
-                        'fade-in-up': 'fadeInUp 0.6s ease-out forwards',
-                    },
-                    keyframes: {
-                        fadeInUp: {
-                            '0%': { opacity: '0', transform: 'translateY(20px)' },
-                            '100%': { opacity: '1', transform: 'translateY(0)' },
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    
-    <style>
-        html {
-            font-size: 16px;
-        }
-        
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 4px;
-            height: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 9999px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-        
-        .glass-panel {
-            background: rgba(30, 30, 30, 0.6);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-        }
-    </style>
-    
-    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            mermaid.initialize({
-                startOnLoad: true,
-                theme: 'dark',
-                securityLevel: 'loose',
-                themeVariables: {
-                    background: '#121212',
-                    primaryColor: '#A8C7FA',
-                    primaryTextColor: '#ffffff',
-                    lineColor: '#94a3b8',
-                }
-            });
-        });
-    </script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Anot8 — Release &amp; Architecture Report</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --border: #334155;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --accent: #f59e0b;
+      --green: #10b981;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 2rem 1rem 4rem;
+    }
+    main { max-width: 880px; margin: 0 auto; }
+    h1, h2 { color: var(--text); letter-spacing: -0.02em; }
+    h1 { font-size: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem; }
+    h2 { font-size: 1.25rem; margin-top: 2rem; color: var(--accent); }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      background: var(--surface);
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.875em;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    th, td {
+      text-align: left;
+      padding: 0.65rem 0.85rem;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.9rem;
+    }
+    th { background: rgba(255, 255, 255, 0.04); font-weight: 600; }
+    .badge {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--green);
+      font-weight: 600;
+      font-size: 0.8rem;
+    }
+  </style>
 </head>
-<body class="h-full font-sans text-zinc-300 flex flex-col overflow-hidden selection:bg-google-blue/30 selection:text-white bg-[#121212]">
+<body>
+  <main>
+    <h1>Anot8 — Release &amp; Architecture Report</h1>
+    <p>
+      <strong>Anot8</strong> is an open-source, client-side screenshot annotation and split-view Markdown note-taking web app with a headless CLI, stdio MCP server, agent skill, and browser bridge.
+    </p>
 
-    <div id="toast" class="fixed top-5 right-5 transform translate-y-[-100px] opacity-0 transition-all duration-300 bg-emerald-500 text-white font-headings font-bold px-4 py-2.5 rounded-xl shadow-2xl flex items-center space-x-2.5 z-50">
-        <span class="text-xs">Copied to Clipboard!</span>
-    </div>
+    <h2>Repository &amp; Live Deployment</h2>
+    <ul>
+      <li><strong>GitHub Repository</strong>: <a href="https://github.com/ksprashu/anot8">https://github.com/ksprashu/anot8</a></li>
+      <li><strong>Live Web App (GitHub Pages PWA)</strong>: <a href="https://anot8.ksprashu.dev">https://anot8.ksprashu.dev</a></li>
+      <li><strong>Agent Usage Docs</strong>: <code>docs/agent-usage.md</code> and <code>.claude/skills/anot8/SKILL.md</code></li>
+    </ul>
 
-    <!-- Top Navigation Bar -->
-    <header class="h-16 border-b border-white/10 px-6 flex items-center justify-between shrink-0 glass-panel sticky top-0 z-40">
-        <div class="flex items-center space-x-6 min-w-0">
-            <div class="flex items-center space-x-2 shrink-0">
-                <div class="w-3 h-3 rounded-full bg-google-blue animate-pulse"></div>
-                <span class="text-sm font-headings font-extrabold tracking-wide text-white uppercase">Google Keynote</span>
-            </div>
-            <nav class="hidden md:flex items-center space-x-1 pl-4 border-l border-white/10">
-                
-        <a href="user_guide.html" class="px-3 py-1.5 rounded-lg text-sm font-sans transition duration-200 text-zinc-400 hover:text-white hover:bg-white/5">
-            User & Demo Guide
-        </a>
-        
-        <a href="deployment_guide.html" class="px-3 py-1.5 rounded-lg text-sm font-sans transition duration-200 text-zinc-400 hover:text-white hover:bg-white/5">
-            Enterprise Deployment
-        </a>
-        
-        <a href="master_roadmap.html" class="px-3 py-1.5 rounded-lg text-sm font-sans transition duration-200 text-zinc-400 hover:text-white hover:bg-white/5">
-            Project Roadmap & History
-        </a>
-        
-            </nav>
-        </div>
-        <div class="flex items-center space-x-4 shrink-0">
-            <span class="text-xs font-console text-zinc-400">DOCS_SYNC <span class="text-emerald-400 font-bold">ONLINE</span></span>
-        </div>
-    </header>
-    
-    <!-- Main Content Area -->
-    <main class="flex-1 overflow-y-auto custom-scrollbar relative">
-        <!-- Subtle Glow Background -->
-        <div class="absolute top-[-100px] left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-google-blue/10 rounded-full blur-[100px] -z-10 pointer-events-none"></div>
+    <h2>MCP Server, CLI &amp; Agent Skill</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Surface</th>
+          <th>Capabilities</th>
+          <th>Entry Point</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>MCP Server (stdio)</strong></td>
+          <td>8 tools (<code>anot8_schema</code>, <code>anot8_inspect_image</code>, <code>anot8_init_spec</code>, <code>anot8_validate</code>, <code>anot8_apply_ops</code>, <code>anot8_render</code>, <code>anot8_markdown</code>, <code>anot8_share_url</code>), 3 resources, 2 prompts</td>
+          <td><code>node dist-cli/anot8.js mcp</code></td>
+        </tr>
+        <tr>
+          <td><strong>CLI</strong></td>
+          <td><code>inspect</code>, <code>init</code>, <code>render</code>, <code>markdown</code>, <code>validate</code>, <code>apply</code>, <code>share</code>, <code>schema</code>, <code>mcp</code></td>
+          <td><code>anot8 &lt;cmd&gt;</code></td>
+        </tr>
+        <tr>
+          <td><strong>Agent Skill</strong></td>
+          <td>Closed-loop visual self-check workflow, anchor/percentage recipes, redaction patterns</td>
+          <td><code>.claude/skills/anot8/SKILL.md</code></td>
+        </tr>
+        <tr>
+          <td><strong>Browser Bridge</strong></td>
+          <td><code>window.anot8.{schema,loadSpec,apply,getSpec,render,markdown}</code> + <code>#spec=</code> links</td>
+          <td>Web App / PWA</td>
+        </tr>
+      </tbody>
+    </table>
 
-        <div class="max-w-2xl lg:max-w-3xl xl:max-w-4xl mx-auto px-8 py-8 leading-relaxed pt-12 pb-24 animate-fade-in-up relative z-10">
-            <h1 class="text-3xl md:text-5xl font-headings font-black tracking-tight text-white mb-4">Anotato — Release & Deployment Report</h1>
-            <div class="h-1 w-20 bg-google-blue rounded-full mb-10"></div>
-            
-            <div class="space-y-6">
-                <p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">!<a href="/Users/ksprashanth/.gemini/antigravity/brain/76c8db24-d4ba-4e72-827d-c1caa87afcc1/anotato_banner_1788202328329.jpg" target="_blank" rel="noopener noreferrer" class="text-electric-teal hover:text-white underline decoration-electric-teal/40 hover:decoration-white font-semibold transition duration-200">Anotato Banner</a></p>
-
-<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4"><strong class="text-white font-bold font-headings">Anotato</strong> (a play on *Annotate* and *Potato*) is an open-source, high-performance screenshot annotation and note-taking web application built for developer coding harnesses and AI workflows.</p>
-
-<hr class="border-white/5 my-8" />
-<h2 class="text-xl md:text-2xl font-headings font-bold text-neon-indigo border-l-4 border-neon-indigo pl-3 mt-8 mb-3.5 uppercase tracking-wider">🔗 Repository & Live Deployment</h2>
-
-<ul class="space-y-2.5 my-4 pl-1">
-                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
-                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
-                    <span class="leading-relaxed"><strong class="text-white font-bold font-headings">GitHub Repository</strong>: <a href="https://github.com/ksprashu/anotato" target="_blank" rel="noopener noreferrer" class="text-electric-teal hover:text-white underline decoration-electric-teal/40 hover:decoration-white font-semibold transition duration-200">https://github.com/ksprashu/anotato</a></span>
-                </li>
-                
-                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
-                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
-                    <span class="leading-relaxed"><strong class="text-white font-bold font-headings">Live Cloud Run Endpoint</strong>: <a href="https://anotato-powot63zaa-uc.a.run.app" target="_blank" rel="noopener noreferrer" class="text-electric-teal hover:text-white underline decoration-electric-teal/40 hover:decoration-white font-semibold transition duration-200">https://anotato-powot63zaa-uc.a.run.app</a></span>
-                </li>
-                
-                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
-                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
-                    <span class="leading-relaxed"><strong class="text-white font-bold font-headings">Project Banner</strong>: Committed to <a href="banner.html" class="text-electric-teal hover:text-white underline decoration-electric-teal/40 hover:decoration-white font-semibold transition duration-200"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">docs/images/banner.png</code></a> and embedded at the top of <a href="README.html" class="text-electric-teal hover:text-white underline decoration-electric-teal/40 hover:decoration-white font-semibold transition duration-200"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">README.md</code></a>.</span>
-                </li>
-                </ul>
-
-<hr class="border-white/5 my-8" />
-<h2 class="text-xl md:text-2xl font-headings font-bold text-neon-indigo border-l-4 border-neon-indigo pl-3 mt-8 mb-3.5 uppercase tracking-wider">🔒 Security & Privacy Audit</h2>
-
-<ul class="space-y-2.5 my-4 pl-1">
-                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
-                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
-                    <span class="leading-relaxed"><strong class="text-white font-bold font-headings">Zero Credential / Token Leaks</strong>: Audited all tracked files for API keys, passwords, bearer tokens, and internal email addresses (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">0 found</code>).</span>
-                </li>
-                
-                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
-                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
-                    <span class="leading-relaxed"><strong class="text-white font-bold font-headings">Environment & Deploy Isolation</strong>: Created <a href=".env.deploy.html" class="text-electric-teal hover:text-white underline decoration-electric-teal/40 hover:decoration-white font-semibold transition duration-200"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">.env.deploy.example</code></a> for local project configuration, with <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">.env.deploy</code> gitignored to prevent accidental commits of personal project configurations.</span>
-                </li>
-                
-                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
-                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
-                    <span class="leading-relaxed"><strong class="text-white font-bold font-headings">Zero-Network Client Architecture</strong>: Verified that the frontend SPA makes zero outbound external network requests or fetch calls during operation, guaranteeing complete client-side privacy.</span>
-                </li>
-                </ul>
-
-<hr class="border-white/5 my-8" />
-<h2 class="text-xl md:text-2xl font-headings font-bold text-neon-indigo border-l-4 border-neon-indigo pl-3 mt-8 mb-3.5 uppercase tracking-wider">☁️ Parameterized Cloud Run Deployment (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">deploy.sh</code>)</h2>
-
-<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">The deployment script <a href="deploy.html" class="text-electric-teal hover:text-white underline decoration-electric-teal/40 hover:decoration-white font-semibold transition duration-200"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">deploy.sh</code></a> is fully parameterized:</p>
-
-
-            <div class="rounded-2xl overflow-hidden border border-white/5 bg-[#080b13] my-6 font-console text-xs relative group shadow-2xl backdrop-blur-md">
-                <div class="flex items-center justify-between px-4 py-2.5 bg-[#0d101b] border-b border-white/5">
-                    <div class="flex items-center space-x-1.5">
-                        <span class="w-2.5 h-2.5 rounded-full bg-red-500/80 shadow-[0_0_6px_rgba(239,68,68,0.4)]"></span>
-                        <span class="w-2.5 h-2.5 rounded-full bg-yellow-500/80 shadow-[0_0_6px_rgba(234,179,8,0.4)]"></span>
-                        <span class="w-2.5 h-2.5 rounded-full bg-green-500/80 shadow-[0_0_6px_rgba(34,197,94,0.4)]"></span>
-                        <span class="text-xs text-muted-slate font-console font-black pl-2 tracking-widest uppercase">bash code terminal</span>
-                    </div>
-                    <button onclick="navigator.clipboard.writeText(decodeURIComponent('%23%20Option%201%3A%20Pass%20project%20ID%20and%20optional%20region%20as%20arguments%0A./deploy.sh%20%3Cyour-gcp-project-id%3E%20%5Bregion%5D%0A%0A%23%20Option%202%3A%20Use%20environment%20variables%0AGCP_PROJECT_ID%3Dyour-gcp-project-id%20GCP_REGION%3Dus-central1%20./deploy.sh%0A%0A%23%20Option%203%3A%20Configure%20via%20.env.deploy%20file%0Acp%20.env.deploy.example%20.env.deploy%0A%23%20Edit%20.env.deploy%20with%20your%20project%20ID%0A./deploy.sh%0A')); showCopiedToast(this);" class="text-xs font-console font-bold text-muted-slate hover:text-white bg-white/5 hover:bg-white/10 px-2 py-0.5 rounded-md transition duration-200 border border-white/5 flex items-center space-x-1 group-hover:border-white/10">
-                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                        <span>Copy</span>
-                    </button>
-                </div>
-                <pre class="p-4 overflow-x-auto text-zinc-300 leading-relaxed font-console text-xs md:text-sm max-h-[420px] custom-scrollbar"><code># Option 1: Pass project ID and optional region as arguments
-./deploy.sh &lt;your-gcp-project-id&gt; [region]
-
-# Option 2: Use environment variables
-GCP_PROJECT_ID=your-gcp-project-id GCP_REGION=us-central1 ./deploy.sh
-
-# Option 3: Configure via .env.deploy file
-cp .env.deploy.example .env.deploy
-# Edit .env.deploy with your project ID
-./deploy.sh
-</code></pre>
-            </div>
-            
-
-<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4"><strong class="text-white font-bold font-headings">Guardrails & Defaults</strong>:</p>
-<ul class="space-y-2.5 my-4 pl-1">
-                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
-                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
-                    <span class="leading-relaxed"><strong class="text-white font-bold font-headings">Project</strong>: Resolves from CLI argument $\rightarrow$ <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">GCP_PROJECT_ID</code> $\rightarrow$ <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">PROJECT_ID</code> $\rightarrow$ active <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">gcloud</code> config. Prompts with helpful instructions if unset.</span>
-                </li>
-                
-                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
-                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
-                    <span class="leading-relaxed"><strong class="text-white font-bold font-headings">Region</strong>: Defaults to <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">us-central1</code> (overridable via <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">GCP_REGION</code> or CLI argument).</span>
-                </li>
-                
-                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
-                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
-                    <span class="leading-relaxed"><strong class="text-white font-bold font-headings">Service Name</strong>: Defaults to <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">anotato</code> (overridable via <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">SERVICE_NAME</code>).</span>
-                </li>
-                
-                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
-                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
-                    <span class="leading-relaxed"><strong class="text-white font-bold font-headings">Scale-to-Zero Guardrail</strong>: <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">--min-instances=0</code> (zero idle compute costs).</span>
-                </li>
-                
-                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
-                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
-                    <span class="leading-relaxed"><strong class="text-white font-bold font-headings">Max Instance Cap</strong>: <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">--max-instances=5</code> (protects against runaway billing from traffic floods).</span>
-                </li>
-                
-                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
-                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
-                    <span class="leading-relaxed"><strong class="text-white font-bold font-headings">Concurrency</strong>: <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">--concurrency=80</code> requests per instance.</span>
-                </li>
-                </ul>
-
-<hr class="border-white/5 my-8" />
-<h2 class="text-xl md:text-2xl font-headings font-bold text-neon-indigo border-l-4 border-neon-indigo pl-3 mt-8 mb-3.5 uppercase tracking-wider">📊 Google Analytics 4 (GA4) & Custom Telemetry</h2>
-
-<ul class="space-y-2.5 my-4 pl-1">
-                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
-                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
-                    <span class="leading-relaxed"><strong class="text-white font-bold font-headings">Measurement ID</strong>: <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">G-RN4Y25GBXM</code> (configured asynchronously in <a href="index.html" class="text-electric-teal hover:text-white underline decoration-electric-teal/40 hover:decoration-white font-semibold transition duration-200"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">index.html</code></a>)</span>
-                </li>
-                
-                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
-                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
-                    <span class="leading-relaxed"><strong class="text-white font-bold font-headings">Telemetry Module</strong>: <a href="telemetry.html" class="text-electric-teal hover:text-white underline decoration-electric-teal/40 hover:decoration-white font-semibold transition duration-200"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">src/analytics/telemetry.ts</code></a></span>
-                </li>
-                
-                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
-                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
-                    <span class="leading-relaxed"><strong class="text-white font-bold font-headings">Tracked Custom Events</strong>:</span>
-                </li>
-                </ul>
-<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">  1. <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">paste</code>: Dispatched upon image ingestion from clipboard (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">Cmd+V</code>), drag-and-drop, or file picker.</p>
-<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">  2. <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">copy</code>: Dispatched upon copying composite PNG images (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">image/png</code>), copying markdown notes (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">text/plain</code>), or downloading files.</p>
-<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">  3. <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">annotate</code>: Dispatched upon drawing any shape or callout badge (bounding box, ellipse, arrow, pin).</p>
-<ul class="space-y-2.5 my-4 pl-1">
-                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
-                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
-                    <span class="leading-relaxed"><strong class="text-white font-bold font-headings">Resilience</strong>: Non-blocking <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">queueMicrotask</code> scheduling, strict error boundaries, offline auto-bypass, and unit test isolation.</span>
-                </li>
-                </ul>
-
-<hr class="border-white/5 my-8" />
-<h2 class="text-xl md:text-2xl font-headings font-bold text-neon-indigo border-l-4 border-neon-indigo pl-3 mt-8 mb-3.5 uppercase tracking-wider">⚡ Offline Caching, Edge Performance & Bot Attack Safeguards</h2>
-
-<ul class="space-y-2.5 my-4 pl-1">
-                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
-                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
-                    <span class="leading-relaxed"><strong class="text-white font-bold font-headings">Immutable Asset Caching</strong>: Static JS/CSS/Fonts are hashed and served with <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">Cache-Control: public, max-age=31536000, immutable</code>.</span>
-                </li>
-                
-                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
-                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
-                    <span class="leading-relaxed"><strong class="text-white font-bold font-headings">Nginx Bot & Burst Protection</strong> (<a href="nginx.html" class="text-electric-teal hover:text-white underline decoration-electric-teal/40 hover:decoration-white font-semibold transition duration-200"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">nginx.conf</code></a>):</span>
-                </li>
-                
-                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
-                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
-                    <span class="leading-relaxed">IP-based rate limiting zone: <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">limit_req_zone $binary_remote_addr zone=anotato_limit:10m rate=30r/s burst=50 nodelay</code>.</span>
-                </li>
-                
-                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
-                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
-                    <span class="leading-relaxed">Max connection limit: <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">limit_conn anotato_conn 30</code>.</span>
-                </li>
-                
-                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
-                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
-                    <span class="leading-relaxed">Gzip compression on all textual/vector assets.</span>
-                </li>
-                
-                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
-                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
-                    <span class="leading-relaxed">Security headers: <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">X-Frame-Options: DENY</code>, <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">X-Content-Type-Options: nosniff</code>, <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">Referrer-Policy</code>, and CSP.</span>
-                </li>
-                </ul>
-
-<hr class="border-white/5 my-8" />
-<h2 class="text-xl md:text-2xl font-headings font-bold text-neon-indigo border-l-4 border-neon-indigo pl-3 mt-8 mb-3.5 uppercase tracking-wider">🧪 Comprehensive Verification Summary</h2>
-
-
-        <div class="overflow-x-auto my-6 border border-white/5 rounded-2xl bg-white/[0.005] shadow-xl backdrop-blur-md">
-            <table class="min-w-full divide-y divide-white/5 text-sm">
-                <thead class="bg-white/[0.015]">
-                    <tr class="divide-x divide-white/5"><th class="px-4 py-3 text-left text-xs font-console font-bold uppercase tracking-widest text-white border-b border-white/5">Verification Track</th><th class="px-4 py-3 text-left text-xs font-console font-bold uppercase tracking-widest text-white border-b border-white/5">Scope / Command</th><th class="px-4 py-3 text-left text-xs font-console font-bold uppercase tracking-widest text-white border-b border-white/5">Result</th></tr>
-                </thead>
-                <tbody class="divide-y divide-white/5">
-                    <tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings"><strong class="text-white font-bold font-headings">Vitest Unit & Integration</strong></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">npm test</code> (58 test files)</td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><strong class="text-white font-bold font-headings">877 / 877 passed (100%)</strong></td></tr><tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings"><strong class="text-white font-bold font-headings">Standalone 4-Tier E2E</strong></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">npx tsx tests/e2e/test-runner.ts</code></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><strong class="text-white font-bold font-headings">247 / 247 passed (100%)</strong></td></tr><tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings"><strong class="text-white font-bold font-headings">TypeScript Typecheck</strong></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">npm run typecheck</code></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><strong class="text-white font-bold font-headings">0 errors</strong></td></tr><tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings"><strong class="text-white font-bold font-headings">ESLint</strong></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">npm run lint</code></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><strong class="text-white font-bold font-headings">0 errors</strong></td></tr><tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings"><strong class="text-white font-bold font-headings">Production Build</strong></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">npm run build</code></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><strong class="text-white font-bold font-headings">Clean bundle in <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">dist/</code></strong></td></tr><tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings"><strong class="text-white font-bold font-headings">Live Cloud Run Status</strong></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">curl</code> endpoint verification</td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><strong class="text-white font-bold font-headings">HTTP 200 with immutable cache headers</strong></td></tr><tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings"><strong class="text-white font-bold font-headings">Git Status</strong></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">git status</code></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><strong class="text-white font-bold font-headings">Clean, pushed to origin main</strong></td></tr>
-                </tbody>
-            </table>
-        </div>
-        
-
-            </div>
-        </div>
-        
-        <footer class="max-w-2xl lg:max-w-3xl xl:max-w-4xl mx-auto px-8 py-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between text-xs text-zinc-500 mx-auto px-8 relative z-10">
-            <p>© 2026 Google India Summit • Developed on stage live with Antigravity</p>
-            <a href="https://ai.google.dev/gemini-api/docs" target="_blank" class="hover:text-white transition mt-2 md:mt-0">Gemini Live API Docs ➔</a>
-        </footer>
-    </main>
-
-    <script>
-        function showCopiedToast(btn) {
-            const toast = document.getElementById('toast');
-            toast.style.transform = 'translateY(0)';
-            toast.style.opacity = '1';
-            
-            setTimeout(() => {
-                toast.style.transform = 'translateY(-100px)';
-                toast.style.opacity = '0';
-            }, 2000);
-        }
-    </script>
+    <h2>Verification Summary</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Track</th>
+          <th>Command</th>
+          <th>Result</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Vitest DOM &amp; Node Suites</td>
+          <td><code>npm test</code></td>
+          <td><span class="badge">84 files / 1502 tests passing</span></td>
+        </tr>
+        <tr>
+          <td>Standalone 4-Tier E2E</td>
+          <td><code>npx tsx tests/e2e/test-runner.ts</code></td>
+          <td><span class="badge">315 / 315 passing</span></td>
+        </tr>
+        <tr>
+          <td>TypeScript &amp; ESLint</td>
+          <td><code>npm run typecheck &amp;&amp; npm run lint</code></td>
+          <td><span class="badge">0 errors</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </main>
 </body>
 </html>

@@ -12,7 +12,8 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue?logo=typescript&logoColor=white&style=flat-square)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-18.3-61DAFB?logo=react&logoColor=black&style=flat-square)](https://react.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38B2AC?logo=tailwind-css&logoColor=white&style=flat-square)](https://tailwindcss.com/)
-[![Vitest](https://img.shields.io/badge/Tests-84%2F84%20Files%20Passing%20(1498%20Tests)-brightgreen?logo=vitest&logoColor=white&style=flat-square)](tests/)
+[![Vitest](https://img.shields.io/badge/Tests-84%2F84%20Files%20Passing%20(1502%20Tests)-brightgreen?logo=vitest&logoColor=white&style=flat-square)](tests/)
+[![MCP](https://img.shields.io/badge/MCP-Stdio%20Server%20%2B%20Skill-8B5CF6?style=flat-square)](docs/agent-usage.md)
 [![GitHub Pages](https://img.shields.io/badge/Deployment-GitHub%20Pages-222222?logo=github&logoColor=white&style=flat-square)](.github/workflows/deploy-pages.yml)
 
 </div>
@@ -93,10 +94,11 @@ Developers, technical writers, support engineers, and product teams constantly c
 - **Zero Network Egress**: Once loaded, operates completely offline with full client-side execution.
 
 ### 🤖 Parametric Editing for AI Agents
-- **Anot8 spec**: A JSON document format (`.anot8.json`) that describes the image, frame, and annotations, with percentage coordinates and anchors such as `"@submit.right"`.
-- **Headless rendering**: The same Canvas2D exporter runs in Node via `@napi-rs/canvas`, so the CLI and MCP server produce the same PNG as the Export button.
-- **Local only**: A CLI, a stdio MCP server, and a `window.anot8` browser bridge. Nothing is hosted. See [Agent Usage](#-agent-usage-cli-mcp-browser).
-- **Round trip with people**: Save the current canvas as a spec, or drop or paste a spec onto the app to load it.
+- **Anot8 spec**: A JSON document format (`.anot8.json`) that describes the image, frame, and annotations, with percentage coordinates and live anchors such as `"@submit.right"`.
+- **Headless rendering**: The same Canvas2D exporter runs in Node via `@napi-rs/canvas`, so the CLI and MCP server produce the exact same PNG as the Export button.
+- **MCP Server + Agent Skill**: Stdio MCP server (`anot8_schema`, `anot8_inspect_image`, `anot8_init_spec`, `anot8_validate`, `anot8_apply_ops`, `anot8_render`, `anot8_markdown`, `anot8_share_url`, plus resources and prompts) paired with `.claude/skills/anot8/SKILL.md` for closed-loop visual self-check.
+- **Local only**: A CLI, a stdio MCP server, an agent skill, and a `window.anot8` browser bridge. Nothing is hosted. See [Agent Usage](#-agent-usage-cli-mcp-browser).
+- **Round trip with people**: Save the current canvas as a spec, share a `#spec=<base64url>` link, or drop/paste a spec onto the app to load it.
 
 ---
 
@@ -150,9 +152,10 @@ The reducer, geometry math, markdown serializer, and Canvas2D exporter form a **
 | Module | Role |
 |---|---|
 | `src/spec/` | Zod schema for the Anot8 spec, `compileSpec` (percentages and anchors → annotations), `toSpec`, and edit `applyOps` |
-| `src/core/node/` | Node render backend and `renderSpec` (PNG plus markdown) |
-| `cli/` | The `anot8` CLI and the stdio MCP server, bundled by tsup to `dist-cli/` |
+| `src/core/node/` | Node render backend (`@napi-rs/canvas`), SSRF/bounds guards, `buildStarterSpec`, and `renderSpec` (PNG + markdown + bounds) |
+| `cli/` | The `anot8` CLI and the stdio MCP server (8 tools, 3 resources, 2 prompts), bundled by tsup to `dist-cli/` |
 | `src/bridge/` | `window.anot8` session, `#spec=` links, and spec drop/paste in the app |
+| `.claude/skills/anot8/` | Agent skill teaching the closed-loop visual annotation and redaction workflow |
 
 ---
 
@@ -208,7 +211,7 @@ App icons are generated from `public/logo.svg` and `scripts/logo-maskable.svg` w
 
 ## 🤖 Agent Usage (CLI, MCP, Browser)
 
-AI agents and scripts can use Anot8 as a parametric editor. They describe annotations as a JSON spec, render it headlessly, look at the result, and adjust with edit ops. Everything runs locally: a CLI, a stdio MCP server that runs as a subprocess of the agent, and a `window.anot8` bridge in the app.
+AI agents and scripts can use Anot8 as a parametric editor. They describe annotations as a JSON spec, render it headlessly, inspect the returned preview and pixel bounding boxes, and adjust with edit ops. Everything runs locally: a CLI, a stdio MCP server (`anot8 mcp`) configured in `.mcp.json`, an agent skill in `.claude/skills/anot8/SKILL.md`, and a `window.anot8` bridge in the app.
 
 ```json
 {
@@ -224,11 +227,30 @@ AI agents and scripts can use Anot8 as a parametric editor. They describe annota
 
 ```bash
 npm run build:cli && npm link
-anot8 render shot.anot8.json -o out.png --md notes.md
+anot8 inspect shot.png
+anot8 init shot.png -o shot.anot8.json
+anot8 render shot.anot8.json -o out.png --md notes.md --format report
+anot8 markdown shot.anot8.json --format checklist -o tasks.md
 anot8 apply shot.anot8.json --ops '[{"op":"update","id":"submit","set":{"x":300}}]' --in-place
+anot8 share shot.anot8.json
 ```
 
-See **[docs/agent-usage.md](docs/agent-usage.md)** for the spec reference (anchors, percentages, hex colors, text labels, crop and padding), the edit ops, the MCP tools, and the browser bridge.
+### MCP Server Tools, Resources & Prompts
+
+| MCP Capability | Name | Description |
+|---|---|---|
+| **Tool** | `anot8_schema` | Usage guide plus JSON Schemas for DocumentSpec (v1) and SpecOp[] |
+| **Tool** | `anot8_inspect_image` | Returns natural `{ width, height }` of an image path, URL, or data URL |
+| **Tool** | `anot8_init_spec` | Creates a validated starter `.anot8.json` spec with image dimensions populated |
+| **Tool** | `anot8_validate` | Validates a spec and returns path-addressed issues or compiled annotation bounds |
+| **Tool** | `anot8_apply_ops` | Applies `add`, `update`, `delete`, `reorder`, `clear`, `setFrame` while keeping `@id` anchors live |
+| **Tool** | `anot8_render` | Renders composite PNG + Markdown and returns a visual preview image + pixel `bounds` |
+| **Tool** | `anot8_markdown` | Serializes numbered notes into `list`, `table`, `checklist`, or `report` Markdown |
+| **Tool** | `anot8_share_url` | Encodes a spec into a `#spec=<base64url>` link for opening in the browser editor |
+| **Resource** | `anot8://guide`, `anot8://schema/spec`, `anot8://schema/ops` | Guide and JSON Schemas exposed as MCP resources |
+| **Prompt** | `annotate-screenshot`, `redact-screenshot` | Guided prompts for closed-loop visual callouts and privacy redaction |
+
+See **[docs/agent-usage.md](docs/agent-usage.md)** and **[.claude/skills/anot8/SKILL.md](.claude/skills/anot8/SKILL.md)** for the full spec reference (anchors, percentages, hex colors, text labels, crop and padding), edit ops, MCP server, and browser bridge.
 
 ---
 
@@ -275,7 +297,7 @@ See **[docs/agent-usage.md](docs/agent-usage.md)** for the spec reference (ancho
 Anot8 has an automated test matrix covering unit math, React components, integration pipelines, 4-tier opaque-box E2E scenarios, and headless agent surfaces. Vitest runs two projects: `dom` (jsdom, everything under `tests/` except `tests/node/`) and `node` (golden image renders, CLI, and MCP server over stdio).
 
 ```bash
-# Run the complete test suite (84 files, 1498 tests)
+# Run the complete test suite (84 files, 1502 tests)
 npm test
 
 # Run only the headless spec, CLI, and MCP tests

@@ -1,14 +1,15 @@
 # Agent usage
 
-Anot8 can be driven by AI agents and scripts as a **parametric** screenshot editor: annotations are described as data (an Anot8 *spec*), rendered headlessly, inspected, and adjusted. Everything runs locally. There are three ways in:
+Anot8 can be driven by AI agents and scripts as a **parametric** screenshot editor: annotations are described as data (an Anot8 *spec*), rendered headlessly, inspected, and adjusted. Everything runs locally. There are four surfaces:
 
 | Surface | Use it when | How |
 |---|---|---|
-| **CLI** (`anot8`) | Scripts, CI, any agent with a shell | `npm run build:cli && npm link` |
+| **Agent Skill** (`anot8`) | Claude Code / skill-aware agents | `.claude/skills/anot8/SKILL.md` (auto-discovered in this repo) |
 | **MCP server** (stdio) | Agents that speak MCP (Claude Code, Claude Desktop, …) | `anot8 mcp` as a local subprocess. No network listener. |
+| **CLI** (`anot8`) | Scripts, CI, any agent with a shell | `npm run build:cli && npm link` |
 | **Browser bridge** (`window.anot8`) | Agents that drive Chrome, or handing a result to a person to tweak | Open the app; call `window.anot8.*` |
 
-All three use the same spec, compiler, and renderer (Canvas2D in the browser, `@napi-rs/canvas` in Node), so a spec renders the same everywhere.
+All surfaces share the same spec, compiler, and renderer (Canvas2D in the browser, `@napi-rs/canvas` in Node), so a spec renders the same everywhere.
 
 ![Rendered sample spec](images/agent-sample.png)
 
@@ -75,9 +76,11 @@ npm run build:cli && npm link          # installs the `anot8` command locally
 
 anot8 inspect shot.png                # {"width":2880,"height":1800}: placing coordinates needs this
 anot8 init shot.png                   # writes shot.anot8.json with the image dimensions
-anot8 render shot.anot8.json -o out.png --md notes.md [--scale 2]
-anot8 validate shot.anot8.json       # exit 1 with path-addressed issues on stderr
+anot8 render shot.anot8.json -o out.png --md notes.md [--format list|table|checklist|report] [--scale 2]
+anot8 markdown shot.anot8.json --format checklist -o tasks.md
+anot8 validate shot.anot8.json        # exit 1 with path-addressed issues on stderr
 anot8 apply shot.anot8.json --ops '[{"op":"update","id":"submit","set":{"x":300}}]' --in-place
+anot8 share shot.anot8.json           # prints #spec=<base64url> link for opening in the browser app
 anot8 schema [spec|ops]
 ```
 
@@ -91,15 +94,27 @@ The project `.mcp.json` already registers the server for Claude Code after `npm 
 { "mcpServers": { "anot8": { "command": "node", "args": ["/path/to/anot8/dist-cli/anot8.js", "mcp"] } } }
 ```
 
-Tools:
+### Tools
 
-- `anot8_schema`: a usage guide plus the spec and ops JSON Schemas. Call this first.
-- `anot8_inspect_image`: image dimensions.
-- `anot8_validate`: path-addressed issues.
-- `anot8_apply_ops`: returns the new spec. Pass `write: true` to update `specPath` in place.
-- `anot8_render`: writes the PNG to `output` and **returns the rendered image** (downscaled to 1568px on the long side), so the agent can look at its own edit and correct it in the same loop.
+- `anot8_schema`: usage guide plus the spec and ops JSON Schemas. Call this first.
+- `anot8_inspect_image`: natural image dimensions (`width`, `height`).
+- `anot8_init_spec`: inspects an image, creates a starter v1 spec with `width` and `height` populated, and optionally writes it to `output`.
+- `anot8_validate`: checks a spec and returns path-addressed issues or compiled annotation summaries with pixel `bounds`.
+- `anot8_apply_ops`: applies spec-level ops (`add`, `update`, `delete`, `reorder`, `clear`, `setFrame`) and returns the new spec. Pass `write: true` to update `specPath` in place.
+- `anot8_render`: writes the PNG to `output`, optionally writes markdown notes (`markdownOutput`, `markdownFormat`), and **returns the rendered image** (downscaled to 1568px on the long side) plus each annotation's pixel `bounds` so the agent can check its own edit and adjust in the same loop.
+- `anot8_markdown`: compiles a spec and serializes its numbered notes in `list`, `table`, `checklist`, or `report` format without rasterizing the PNG.
+- `anot8_share_url`: encodes a spec as a `#spec=<base64url>` link that opens directly in the Anot8 browser editor.
 
-Each tool takes either an inline `spec` object or a `specPath`.
+Each spec tool takes either an inline `spec` object or a `specPath`.
+
+### Resources & Prompts
+
+- **Resources**: `anot8://guide` (usage instructions), `anot8://schema/spec` (DocumentSpec v1 JSON Schema), `anot8://schema/ops` (SpecOp[] JSON Schema).
+- **Prompts**: `annotate-screenshot` (`image`, `goal?`, `output?`) and `redact-screenshot` (`image`, `output?`).
+
+## Agent Skill (`.claude/skills/anot8/SKILL.md`)
+
+For Claude Code and skill-aware agents, `.claude/skills/anot8/SKILL.md` packages the closed-loop workflow (`inspect` → `author spec with @id anchors` → `render & inspect preview + bounds` → `apply_ops` → `render`), coordinate and anchor recipes, badge numbering rules, and CLI/MCP reference.
 
 ## Browser bridge
 
@@ -119,8 +134,14 @@ Agent edits go through the normal undo history, so a person can press ⌘Z to re
 People can also:
 
 - drop or paste a `.anot8.json` file (or spec JSON text) onto the app
-- open a link like `https://…/#spec=<base64url JSON>`; the hash never leaves the browser
+- open a link like `https://anot8.ksprashu.dev/#spec=<base64url JSON>`; the hash never leaves the browser
 - use **Save spec** (the file-with-braces icon at the end of the export toolbar) to download the current document as `.anot8.json`
+
+## Security & Resource Guardrails
+
+- **Local execution**: The MCP server runs strictly over `stdio` as a child process with no network listener.
+- **SSRF protection**: In Node, `http(s)` image fetches reject loopback, link-local, private RFC1918/ULA IPs, and cloud metadata hosts (including across redirects), with a 15s timeout and 50 MB size ceiling. Set `ANOT8_ALLOW_PRIVATE_URLS=1` only when intentionally fetching from a local test server.
+- **Canvas & spec bounds**: Coordinates, annotation counts (`<= 1000`), and output canvas dimensions (`<= 16384px` per side, `<= 64 MP`) are bounded to prevent memory exhaustion.
 
 ## Notes and limits
 
