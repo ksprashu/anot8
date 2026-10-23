@@ -1,8 +1,31 @@
 {
   "name": "anot8",
   "version": "1.0.0",
-  "private": true,
+  "description": "Parametric screenshot annotation: CLI, stdio MCP server and agent skill for Anot8",
+  "license": "Apache-2.0",
+  "author": "Prashanth Subrahmanyam <ksprashanth82@gmail.com>",
+  "homepage": "https://anot8.ksprashu.dev/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ksprashu/anot8.git"
+  },
+  "bugs": "https://github.com/ksprashu/anot8/issues",
+  "keywords": [
+    "screenshot",
+    "annotation",
+    "mcp",
+    "agent-skill",
+    "cli"
+  ],
   "type": "module",
+  "files": [
+    "dist-cli",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
   "bin": {
     "anot8": "dist-cli/anot8.js"
   },
@@ -17,16 +40,12 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "generate-pwa-assets": "pwa-assets-generator && node scripts/generate-maskable-icons.mjs",
-    "build:cli": "tsup"
+    "build:cli": "tsup",
+    "prepublishOnly": "npm run build:cli"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.32.1",
     "@napi-rs/canvas": "^1.0.11",
-    "clsx": "^2.1.1",
-    "lucide-react": "^0.475.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "tailwind-merge": "^3.0.2",
     "zod": "^4.6.7"
   },
   "devDependencies": {
@@ -41,14 +60,19 @@
     "@vite-pwa/assets-generator": "^1.0.4",
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.20",
+    "clsx": "^2.1.1",
     "eslint": "^9.21.0",
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^16.0.0",
     "jsdom": "^26.0.0",
+    "lucide-react": "^0.475.0",
     "pixelmatch": "^8.0.0",
     "pngjs": "^7.0.0",
     "postcss": "^8.5.3",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tailwind-merge": "^3.0.2",
     "tailwindcss": "^3.4.17",
     "tsup": "^8.5.1",
     "typescript": "^5.7.3",

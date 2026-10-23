@@ -21,8 +21,9 @@ coverage/
 .vitest/
 *.lcov
 
-# Agent workspace metadata
-.agents/
+# Agent workspace metadata (skills/ links stay tracked)
+.agents/*
+!.agents/skills/
 
 # Environment variables
 .env
