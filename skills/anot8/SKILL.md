@@ -1,28 +1,51 @@
 ---
 name: anot8
-description: Parametric screenshot annotation, redaction, spotlighting, and markdown callout generation using the Anot8 MCP server, CLI, or browser bridge. Use whenever the user wants to annotate a screenshot, add numbered callouts/boxes/arrows/pins/labels, redact sensitive text with blur, spotlight UI regions, generate markdown bug/review notes from a screenshot, or create/edit .anot8.json specs.
+description: Parametric screenshot annotation, redaction, spotlighting, and markdown callout generation with Anot8 (MCP server or `npx anot8` CLI). Use whenever the user wants to annotate a screenshot, add numbered callouts/boxes/arrows/pins/labels, redact sensitive text with blur, spotlight UI regions, generate markdown bug/review notes from a screenshot, or create/edit .anot8.json specs.
+license: Apache-2.0
+metadata:
+  homepage: https://anot8.ksprashu.dev/
+  repository: https://github.com/ksprashu/anot8
 ---
 
 # Anot8 — Parametric Screenshot Annotation Skill
 
-Anot8 turns screenshot annotation into a declarative, self-verifying loop for AI agents. Instead of guessing pixel coordinates blindly once, you write a JSON spec (`.anot8.json`), render it via the local MCP server or CLI, inspect the returned visual preview and pixel bounding boxes, and refine placement with spec-level edit ops where anchors (`@id.right`) stay live.
+Anot8 turns screenshot annotation into a declarative, self-verifying loop. Instead of guessing pixel coordinates blindly once, you write a JSON spec (`.anot8.json`), render it, look at the rendered PNG and the returned pixel bounding boxes, and refine placement with edit ops where anchors (`@id.right`) stay live.
 
-Everything runs locally with zero hosted compute.
+Everything runs locally on the user's machine. Nothing is uploaded.
 
 ---
 
-## 1. Choose Your Surface
+## 1. Runtime: Pick the First That Works
 
-| Surface | When to prefer it | Entry point |
-|---|---|---|
-| **MCP Server** (`mcp__anot8__*`) | Default in Claude Code / MCP hosts — returns the rendered PNG directly into your visual context | Configured in `.mcp.json` (`node dist-cli/anot8.js mcp`) |
-| **CLI** (`anot8`) | Shell scripts, CI pipelines, batch processing, or when MCP is not connected | `node dist-cli/anot8.js <cmd>` (or `anot8 <cmd>` after `npm link`) |
-| **Browser Bridge** (`window.anot8`) | Driving the live web app via Chrome DevTools MCP or handing an interactive canvas to a human | `window.anot8.{schema,loadSpec,apply,getSpec,render,markdown}` |
+This skill only contains instructions. The engine is the `anot8` npm package (Node.js 20+), fetched on demand. The user does **not** need to clone the repo.
 
-If `dist-cli/anot8.js` is missing or stale after code changes, build it first:
-```bash
-npm run build:cli
-```
+1. **MCP tools already connected** (`anot8_render`, `anot8_inspect_image`, … possibly prefixed, e.g. `mcp__anot8__anot8_render`): use them. `anot8_render` returns the PNG straight into your context.
+2. **Otherwise use the CLI** through a shell. Resolve the command once and reuse it:
+   - `anot8` if it is on `PATH` (`command -v anot8`)
+   - inside an Anot8 source checkout (`package.json` has `"name": "anot8"`): `npm run build:cli` once, then `node dist-cli/anot8.js`
+   - anywhere else: `npx -y anot8@latest`
+
+   Below, `anot8 <cmd>` means whichever command you resolved. After `render`, open the output PNG with your image/file viewing tool to check it visually; the command also prints each annotation's `bounds` as JSON.
+3. **No Node.js** (`node --version` fails or is below 20): ask the user to install Node 20+, or hand them the web app at https://anot8.ksprashu.dev/ with a spec they can drop onto the canvas.
+
+### Optional: register the MCP server
+
+If the user wants the MCP tools for future sessions, offer to register `npx -y anot8 mcp` as a stdio server. Ask before editing their agent config.
+
+| Harness | Command |
+|---|---|
+| Claude Code | `claude mcp add -s user anot8 -- npx -y anot8 mcp` |
+| Gemini CLI | `gemini mcp add -s user anot8 npx -y anot8 mcp` |
+| Codex CLI | `codex mcp add anot8 -- npx -y anot8 mcp` |
+| Any MCP client (JSON config) | `{ "mcpServers": { "anot8": { "command": "npx", "args": ["-y", "anot8", "mcp"] } } }` |
+
+The MCP server picks up new tools only after the harness restarts; keep using the CLI in the current session.
+
+### Hand off to the web app
+
+`anot8 share <spec.json>` (or `anot8_share_url`) prints a `https://anot8.ksprashu.dev/#spec=…` link that opens the spec in the browser editor. Local image paths are inlined, so keep screenshots small. Users can also drag a `.anot8.json` file onto the open app.
+
+If you can drive a browser (e.g. a DevTools MCP), the open app exposes `window.anot8.{schema,loadSpec,apply,getSpec,render,markdown}` for live editing in front of the user.
 
 ---
 

@@ -1,6 +1,8 @@
 ---
 name: cloudflare-domain
 description: Inspect or change Anot8's Cloudflare DNS and redirect rules for ksprashu.dev (anot8 subdomain, ksprashu.dev/anot8 redirect). Use when the custom domain, DNS records, or URL redirects need checking or editing.
+metadata:
+  internal: true
 ---
 
 # Anot8 domain on Cloudflare
