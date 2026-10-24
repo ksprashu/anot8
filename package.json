@@ -1,6 +1,6 @@
 {
   "name": "@ksprashu/anot8",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Parametric screenshot annotation: CLI, stdio MCP server and agent skill for Anot8",
   "license": "Apache-2.0",
   "author": "Prashanth Subrahmanyam <ksprashanth82@gmail.com>",
@@ -23,6 +23,10 @@
     "README.md",
     "LICENSE"
   ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "engines": {
     "node": ">=20"
   },
