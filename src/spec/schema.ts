@@ -22,8 +22,9 @@ export type AnchorPosition = (typeof ANCHOR_POSITIONS)[number];
 
 export const ANCHOR_PATTERN = new RegExp(`^@([A-Za-z0-9_-]+)(?:\\.(${ANCHOR_POSITIONS.join('|')}))?$`);
 const ID_PATTERN = /^[A-Za-z0-9_-]+$/;
-const PERCENT_PATTERN = /^-?\d{1,6}(\.\d{1,12})?%$/;
-const NONNEG_PERCENT_PATTERN = /^\d{1,6}(\.\d{1,12})?%$/;
+// At most 4 integer digits (< 10000%), so a percentage can't produce geometry far outside the image.
+const PERCENT_PATTERN = /^-?\d{1,4}(\.\d{1,12})?%$/;
+const NONNEG_PERCENT_PATTERN = /^\d{1,4}(\.\d{1,12})?%$/;
 export const MAX_COORD = 100_000;
 export const MAX_ANNOTATIONS = 1000;
 

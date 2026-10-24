@@ -200,14 +200,18 @@ export function decodeSpecHash(hash: string): unknown | null {
   return JSON.parse(new TextDecoder().decode(bytes));
 }
 
+/** Encoded links stay this far under the decode cap so the app URL in front of the hash still fits. */
+const SPEC_HASH_URL_HEADROOM = 4096;
+
 export function encodeSpecHash(spec: unknown): string {
   const bytes = new TextEncoder().encode(JSON.stringify(spec));
   const estimatedHashLen = 6 + Math.ceil((bytes.byteLength * 4) / 3);
-  if (estimatedHashLen > MAX_SPEC_HASH_CHARS) {
+  const maxHashLen = MAX_SPEC_HASH_CHARS - SPEC_HASH_URL_HEADROOM;
+  if (estimatedHashLen > maxHashLen) {
     throw new SpecError([
       {
         path: 'image.source',
-        message: `Encoded #spec URL (~${estimatedHashLen} chars) exceeds maximum allowed size (${MAX_SPEC_HASH_CHARS} chars)`,
+        message: `Encoded #spec URL (~${estimatedHashLen} chars) exceeds maximum allowed size (${maxHashLen} chars)`,
       },
     ]);
   }
