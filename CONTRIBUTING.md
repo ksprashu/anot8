@@ -194,6 +194,12 @@ We use a standard GitHub feature branch and Pull Request workflow:
    - Complete the [Pull Request Template](.github/pull_request_template.md).
    - Link any relevant issues being resolved.
 
+### Releasing the npm package
+
+CI builds and packs the CLI on every push and pull request (the tarball is attached to the run as `npm-package`). On a push to `main`, it publishes `@ksprashu/anot8` to npm when `package.json` has a version that isn't on npm yet. To release, bump the version in your PR (`npm version patch --no-git-tag-version`) and merge it.
+
+Publishing uses [npm trusted publishing](https://docs.npmjs.com/trusted-publishers): GitHub's OIDC token authenticates the `ci.yml` workflow, so no npm token is stored in the repo, and every release gets a provenance attestation.
+
 ---
 
 ## Reporting Bugs & Feature Requests
