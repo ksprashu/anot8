@@ -3,11 +3,20 @@
  */
 import { execFileSync, spawnSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import http from 'node:http';
+import type { AddressInfo } from 'node:net';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
-import { assertSafeHttpUrl, isPrivateOrReservedIp } from '../../src/core/node/backend';
+import {
+  assertCanvasDimensions,
+  assertSafeHttpUrl,
+  isPrivateOrReservedIp,
+  MAX_CANVAS_SIDE,
+  publicOnlyLookup,
+  readImageSource,
+} from '../../src/core/node/backend';
 
 const ROOT = path.resolve(__dirname, '../..');
 const CLI = path.join(ROOT, 'dist-cli/anot8.js');
@@ -87,6 +96,12 @@ describe('anot8 CLI', () => {
       width: 1600,
       height: 1000,
     });
+  });
+
+  it('render rejects --scale above 8', () => {
+    const { code, stderr } = run(['render', SHAPES, '-o', path.join(tmp, 'huge.png'), '--scale', '9']);
+    expect(code).not.toBe(0);
+    expect(stderr).toContain('--scale must be a positive number up to 8');
   });
 
   it('validate reports path-addressed issues with exit code 1', () => {
@@ -216,6 +231,21 @@ describe('anot8 MCP server', () => {
     expect(readFileSync(output).subarray(0, 8).toString('hex')).toBe(PNG_SIGNATURE);
   });
 
+  it('refuses output paths with the wrong extension', async () => {
+    const cases = [
+      { name: 'anot8_render', arguments: { specPath: SHAPES, output: path.join(tmp, 'evil.sh') } },
+      { name: 'anot8_render', arguments: { specPath: SHAPES, markdownOutput: path.join(tmp, 'notes.txt') } },
+      { name: 'anot8_markdown', arguments: { specPath: SHAPES, output: path.join(tmp, '.bashrc') } },
+      { name: 'anot8_apply_ops', arguments: { specPath: SHAPES, ops: [], output: path.join(tmp, 'spec.js') } },
+      { name: 'anot8_init_spec', arguments: { source: path.join(FIXTURES, 'screen.png'), output: path.join(tmp, 'x.png') } },
+    ];
+    for (const call of cases) {
+      const result = await client.callTool(call);
+      expect(result.isError, call.name).toBe(true);
+      expect((result.content as Array<{ text: string }>)[0].text).toContain('Output file must end in');
+    }
+  });
+
   it('serializes markdown via anot8_markdown and encodes share URLs via anot8_share_url', async () => {
     const mdResult = await client.callTool({
       name: 'anot8_markdown',
@@ -286,5 +316,60 @@ describe('Node backend URL and resource guards', () => {
     expect(() => assertSafeHttpUrl('https://user:pass@example.com/a.png')).toThrow(/credentials/);
     expect(() => assertSafeHttpUrl('ftp://example.com/a.png')).toThrow(/protocol/);
     expect(assertSafeHttpUrl('https://example.com/a.png').hostname).toBe('example.com');
+  });
+
+  it('blocks private addresses at connect time, whatever the DNS check saw', async () => {
+    const lookup = (hostname: string, all: boolean) =>
+      new Promise<unknown>((resolve, reject) =>
+        publicOnlyLookup(hostname, { all }, (err: Error | null, address: unknown) =>
+          err ? reject(err) : resolve(address)
+        )
+      );
+    await expect(lookup('127.0.0.1', false)).rejects.toThrow(/private IP 127\.0\.0\.1/);
+    await expect(lookup('127.0.0.1', true)).rejects.toThrow(/private IP/);
+    await expect(lookup('93.184.216.34', false)).resolves.toBe('93.184.216.34');
+    await expect(lookup('93.184.216.34', true)).resolves.toEqual([{ address: '93.184.216.34', family: 4 }]);
+  });
+
+  it('flags the additional reserved ranges', () => {
+    expect(isPrivateOrReservedIp('192.88.99.1')).toBe(true);
+    expect(isPrivateOrReservedIp('fec0::1')).toBe(true);
+    expect(isPrivateOrReservedIp('100::1')).toBe(true);
+    expect(isPrivateOrReservedIp('2606:4700::1111')).toBe(false);
+  });
+
+  it('fetches images over HTTP, following redirects, when private URLs are allowed', async () => {
+    const png = readFileSync(path.join(FIXTURES, 'screen.png'));
+    const server = http.createServer((req, res) => {
+      if (req.url === '/old.png') {
+        res.writeHead(302, { location: '/screen.png' }).end();
+      } else {
+        res.writeHead(200, { 'content-type': 'image/png' }).end(png);
+      }
+    });
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+    const { port } = server.address() as AddressInfo;
+    const url = `http://127.0.0.1:${port}/old.png`;
+    try {
+      await expect(readImageSource(url)).rejects.toThrow(/private or loopback/);
+      process.env.ANOT8_ALLOW_PRIVATE_URLS = '1';
+      expect((await readImageSource(url)).equals(png)).toBe(true);
+    } finally {
+      delete process.env.ANOT8_ALLOW_PRIVATE_URLS;
+      server.close();
+    }
+  });
+
+  it('only reads regular files', async () => {
+    await expect(readImageSource(FIXTURES)).rejects.toThrow(/not a regular file/);
+    const png = await readImageSource(path.join(FIXTURES, 'screen.png'));
+    expect(png.subarray(0, 8).toString('hex')).toBe(PNG_SIGNATURE);
+  });
+
+  it('caps canvas dimensions', () => {
+    expect(assertCanvasDimensions(800.4, 500.6)).toEqual({ width: 800, height: 501 });
+    expect(() => assertCanvasDimensions(MAX_CANVAS_SIDE + 1, 10)).toThrow();
+    expect(() => assertCanvasDimensions(16_000, 16_000)).toThrow();
+    expect(() => assertCanvasDimensions(Number.NaN, 10)).toThrow();
   });
 });

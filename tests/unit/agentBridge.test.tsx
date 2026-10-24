@@ -1,5 +1,12 @@
 import { act, render } from '@testing-library/react';
-import { AgentSession, decodeSpecHash, encodeSpecHash, looksLikeSpec } from '../../src/bridge/agentSession';
+import {
+  AgentSession,
+  decodeSpecHash,
+  encodeSpecHash,
+  looksLikeSpec,
+  MAX_SPEC_HASH_CHARS,
+} from '../../src/bridge/agentSession';
+import { DRAG_RESET_EVENT, dispatchDragReset, useDragReset } from '../../src/hooks/useDragReset';
 import { AgentBridge } from '../../src/bridge/AgentBridge';
 import { appReducer, createInitialState } from '../../src/state/appReducer';
 import { AppProvider, useApp, AppContextValue } from '../../src/state/AppContext';
@@ -127,6 +134,11 @@ describe('spec hash and detection', () => {
     expect(() => decodeSpecHash('#spec=!!!not-base64!!!')).toThrow(/base64url/);
   });
 
+  it('leaves headroom under the decode cap for the app URL', () => {
+    const spec = { ...SPEC, image: { ...SPEC.image, source: 'x'.repeat(Math.floor((MAX_SPEC_HASH_CHARS * 3) / 4) - 1000) } };
+    expect(() => encodeSpecHash(spec)).toThrow(/exceeds maximum allowed size/);
+  });
+
   it('detects spec-shaped values', () => {
     expect(looksLikeSpec(SPEC)).toBe(true);
     expect(looksLikeSpec({ version: 1 })).toBe(false);
@@ -171,5 +183,21 @@ describe('AgentBridge', () => {
 
     unmount();
     expect(window.anot8).toBeUndefined();
+  });
+});
+
+describe('useDragReset', () => {
+  it('runs the reset callback when another handler swallows a drop', () => {
+    const reset = vi.fn();
+    function Probe() {
+      useDragReset(reset);
+      return null;
+    }
+    const { unmount } = render(<Probe />);
+    act(() => dispatchDragReset());
+    expect(reset).toHaveBeenCalledTimes(1);
+    unmount();
+    window.dispatchEvent(new Event(DRAG_RESET_EVENT));
+    expect(reset).toHaveBeenCalledTimes(1);
   });
 });

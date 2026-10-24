@@ -131,6 +131,13 @@ describe('compileSpec', () => {
     ).toMatch(/cycle/);
   });
 
+  it('accepts percentages below 10000% and rejects larger ones', () => {
+    expect(validateSpec(baseSpec([{ type: 'box', x: '-150%', y: '9999.5%', width: '50%', height: 10 }]), dims)).toEqual([]);
+    expect(validateSpec(baseSpec([{ type: 'box', x: '10000%', y: 0, width: 10, height: 10 }]), dims)[0].path).toBe(
+      'annotations[0].x'
+    );
+  });
+
   it('rejects unknown fields and bad values with addressable paths', () => {
     const issues = validateSpec(baseSpec([{ type: 'box', x: 0, y: 0, w: 10, height: 10 }]), dims);
     expect(issues.map((i) => i.path)).toEqual(expect.arrayContaining(['annotations[0]', 'annotations[0].width']));

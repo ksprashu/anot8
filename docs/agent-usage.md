@@ -159,8 +159,10 @@ People can also:
 ## Security & Resource Guardrails
 
 - **Local execution**: The MCP server runs strictly over `stdio` as a child process with no network listener.
-- **SSRF protection**: In Node, `http(s)` image fetches reject loopback, link-local, private RFC1918/ULA IPs, and cloud metadata hosts (including across redirects), with a 15s timeout and 50 MB size ceiling. Set `ANOT8_ALLOW_PRIVATE_URLS=1` only when intentionally fetching from a local test server.
-- **Canvas & spec bounds**: Coordinates, annotation counts (`<= 1000`), and output canvas dimensions (`<= 16384px` per side, `<= 64 MP`) are bounded to prevent memory exhaustion.
+- **SSRF protection**: In Node, `http(s)` image fetches reject loopback, link-local, private RFC1918/ULA IPs, and cloud metadata hosts (including across redirects), with a 15s timeout and 50 MB size ceiling. The address check runs inside the connection's DNS lookup, so a hostname can't pass the check and then rebind to a private IP. Set `ANOT8_ALLOW_PRIVATE_URLS=1` only when intentionally fetching from a local test server.
+- **Local files**: Image paths must point to regular files (no directories, devices or FIFOs) under the same 50 MB ceiling.
+- **MCP output paths**: Tools only write files with the expected extension: `.png` for rendered images, `.md`/`.markdown` for notes, `.json` for specs.
+- **Canvas & spec bounds**: Coordinates, percentages (below `10000%`), annotation counts (`<= 1000`), and output canvas dimensions (`<= 16384px` per side, `<= 64 MP`) are bounded to prevent memory exhaustion.
 
 ## Notes and limits
 

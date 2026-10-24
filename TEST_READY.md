@@ -3,7 +3,7 @@
 **Status**: READY & VERIFIED  
 **Date**: 2026-10-23  
 **Application**: Anot8 Screenshot Annotation & Note-Taking System  
-**Execution Commands**: `npm test`, `npx vitest run --project node`, & `npx tsx tests/e2e/test-runner.ts`  
+**Execution Commands**: `npm test`, `npx vitest run --project node`, & `npx vitest run tests/e2e`  
 **Overall Result**: **100% Tests Passing Across All Suites (84 Files, 1502 Tests)**  
 **Typecheck**: **0 Errors (`tsc --noEmit`)**  
 **Linter**: **0 Errors (`eslint .`)**  
@@ -116,8 +116,8 @@ The complete opaque-box test infrastructure and master test suites for **Anot8**
 # Run Vitest test runner (full suite):
 npm test
 
-# Run standalone E2E test runner (315 tests):
-npx tsx tests/e2e/test-runner.ts
+# Run all E2E suites:
+npx vitest run tests/e2e
 
 # Run Annotely feature E2E tests:
 npm run test:e2e
