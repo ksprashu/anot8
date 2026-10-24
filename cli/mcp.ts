@@ -31,6 +31,22 @@ import {
   summarizeCompiledAnnotations,
 } from '../src/core/node/render';
 
+const SPEC_EXTENSIONS = ['.json'];
+const MARKDOWN_EXTENSIONS = ['.md', '.markdown'];
+const PNG_EXTENSIONS = ['.png'];
+
+/**
+ * Resolves a tool's output path and checks its extension, so a confused or
+ * prompt-injected agent can't point a write at ~/.bashrc or a source file.
+ */
+export function resolveOutputPath(baseDir: string, output: string, field: string, extensions: string[]): string {
+  const resolved = path.resolve(baseDir, output);
+  if (!extensions.includes(path.extname(resolved).toLowerCase())) {
+    throw new SpecError([{ path: field, message: `Output file must end in ${extensions.join(' or ')}` }]);
+  }
+  return resolved;
+}
+
 /** Long side of the preview returned to the model; larger images are downscaled by vision models anyway. */
 const PREVIEW_MAX_SIDE = 1568;
 
@@ -278,7 +294,7 @@ export function createMcpServer(): McpServer {
         annotations?: unknown[];
       }) => {
         const baseDir = path.resolve(args.baseDir ?? process.cwd());
-        const outPath = args.output ? path.resolve(baseDir, args.output) : undefined;
+        const outPath = args.output ? resolveOutputPath(baseDir, args.output, 'output', SPEC_EXTENSIONS) : undefined;
         const { spec, width, height } = await buildStarterSpec({
           image: args.source,
           baseDir,
@@ -348,7 +364,7 @@ export function createMcpServer(): McpServer {
       }
       let resolvedTarget: string | undefined;
       if (target) {
-        resolvedTarget = path.resolve(args.baseDir ?? process.cwd(), target);
+        resolvedTarget = resolveOutputPath(args.baseDir ?? process.cwd(), target, 'output', SPEC_EXTENSIONS);
         await writeFile(resolvedTarget, `${JSON.stringify(next, null, 2)}\n`);
       }
       return json({ spec: next, addedIds, ...(resolvedTarget ? { written: resolvedTarget } : {}) });
@@ -374,7 +390,9 @@ export function createMcpServer(): McpServer {
       const compiled = compileSpec(spec, dims);
       const format = args.format ?? 'list';
       const markdown = renderSpecMarkdown(compiled, format);
-      const outPath = args.output ? path.resolve(args.baseDir ?? process.cwd(), args.output) : undefined;
+      const outPath = args.output
+        ? resolveOutputPath(args.baseDir ?? process.cwd(), args.output, 'output', MARKDOWN_EXTENSIONS)
+        : undefined;
       if (outPath) {
         await writeFile(outPath, markdown);
       }
@@ -438,8 +456,10 @@ export function createMcpServer(): McpServer {
       ): Promise<CallToolResult> => {
         const { data, baseDir } = await loadSpecArgs(args);
         const outBase = path.resolve(args.baseDir ?? process.cwd());
-        const outPng = args.output ? path.resolve(outBase, args.output) : undefined;
-        const outMd = args.markdownOutput ? path.resolve(outBase, args.markdownOutput) : undefined;
+        const outPng = args.output ? resolveOutputPath(outBase, args.output, 'output', PNG_EXTENSIONS) : undefined;
+        const outMd = args.markdownOutput
+          ? resolveOutputPath(outBase, args.markdownOutput, 'markdownOutput', MARKDOWN_EXTENSIONS)
+          : undefined;
         const result = await renderSpec(data, {
           baseDir,
           scale: args.scale,
