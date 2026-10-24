@@ -3,8 +3,10 @@
  * Lets the CLI and MCP server render exactly what the browser export produces.
  */
 import dns from 'node:dns/promises';
-import { readFile, stat } from 'node:fs/promises';
-import net from 'node:net';
+import { open } from 'node:fs/promises';
+import http, { type IncomingMessage } from 'node:http';
+import https from 'node:https';
+import net, { type LookupFunction } from 'node:net';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createCanvas, loadImage, type Image } from '@napi-rs/canvas';
@@ -37,6 +39,7 @@ function isPrivateIpv4Octets(a: number, b: number, c: number, _d: number): boole
   if (a === 172 && b >= 16 && b <= 31) return true;
   if (a === 192 && b === 168) return true;
   if (a === 192 && b === 0 && (c === 0 || c === 2)) return true;
+  if (a === 192 && b === 88 && c === 99) return true;
   if (a === 198 && (b === 18 || b === 19 || (b === 51 && c === 100))) return true;
   if (a === 203 && b === 0 && c === 113) return true;
   if (a === 100 && b >= 64 && b <= 127) return true;
@@ -96,14 +99,17 @@ export function isPrivateOrReservedIp(host: string): boolean {
     const isAllZero = words.every((w) => w === 0);
     const isLoopback = words.slice(0, 7).every((w) => w === 0) && words[7] === 1;
     if (isAllZero || isLoopback) return true;
-    // Link-local fe80::/10, Unique local fc00::/7, Multicast ff00::/8
+    // Link-local fe80::/10, site-local fec0::/10, Unique local fc00::/7, Multicast ff00::/8
     if ((words[0] & 0xffc0) === 0xfe80) return true;
+    if ((words[0] & 0xffc0) === 0xfec0) return true;
     if ((words[0] & 0xfe00) === 0xfc00) return true;
     if ((words[0] & 0xff00) === 0xff00) return true;
     // Teredo (2001:0000::/32), Benchmarking (2001:0002::/48), Documentation (2001:0db8::/32)
     if (words[0] === 0x2001 && (words[1] === 0x0000 || words[1] === 0x0002 || words[1] === 0x0db8)) {
       return true;
     }
+    // Discard-only 100::/64
+    if (words[0] === 0x0100 && words[1] === 0 && words[2] === 0 && words[3] === 0) return true;
     // NAT64 well-known prefix (64:ff9b::/96) and local-use NAT64 (64:ff9b:1::/48)
     if (words[0] === 0x0064 && words[1] === 0xff9b) {
       return true;
@@ -157,78 +163,81 @@ export function assertSafeHttpUrl(rawUrl: string): URL {
   return parsed;
 }
 
-async function assertResolvedHostIsPublic(parsed: URL): Promise<void> {
-  if (process.env.ANOT8_ALLOW_PRIVATE_URLS === '1') return;
-  const unwrapped = parsed.hostname.startsWith('[') && parsed.hostname.endsWith(']')
-    ? parsed.hostname.slice(1, -1)
-    : parsed.hostname;
-  if (net.isIP(unwrapped)) {
-    if (isPrivateOrReservedIp(unwrapped)) {
-      throw new Error(`Refusing to fetch private or loopback IP "${parsed.hostname}"`);
-    }
-    return;
-  }
-  const records = await dns.lookup(unwrapped, { all: true });
-  if (records.length === 0) {
-    throw new Error(`Could not resolve host "${parsed.hostname}"`);
-  }
-  for (const record of records) {
-    if (isPrivateOrReservedIp(record.address)) {
-      throw new Error(`Refusing to fetch "${parsed.hostname}" (resolves to private IP ${record.address})`);
-    }
-  }
-}
-
-async function readResponseWithCap(res: Response, maxBytes: number): Promise<Buffer> {
-  const contentLength = Number(res.headers.get('content-length'));
-  if (Number.isFinite(contentLength) && contentLength > maxBytes) {
-    await res.body?.cancel().catch(() => undefined);
-    throw new Error(`Image exceeds maximum size of ${maxBytes} bytes`);
-  }
-  if (!res.body) {
-    const buf = Buffer.from(await res.arrayBuffer());
-    if (buf.byteLength > maxBytes) throw new Error(`Image exceeds maximum size of ${maxBytes} bytes`);
-    return buf;
-  }
-  const reader = res.body.getReader();
-  const chunks: Uint8Array[] = [];
-  let total = 0;
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    if (value) {
-      total += value.byteLength;
-      if (total > maxBytes) {
-        await reader.cancel().catch(() => undefined);
-        throw new Error(`Image exceeds maximum size of ${maxBytes} bytes`);
+/**
+ * DNS lookup for outgoing image requests that refuses private or reserved addresses.
+ * The socket connects to the address checked here, so a rebinding DNS server can't
+ * answer one address for the check and another for the connection.
+ */
+export const publicOnlyLookup: LookupFunction = (hostname, options, callback) => {
+  dns.lookup(hostname, { all: true, family: options.family ?? 0 }).then(
+    (records) => {
+      if (records.length === 0) {
+        callback(Object.assign(new Error(`Could not resolve host "${hostname}"`), { code: 'ENOTFOUND' }), '', 0);
+        return;
       }
-      chunks.push(value);
-    }
+      if (process.env.ANOT8_ALLOW_PRIVATE_URLS !== '1') {
+        const blocked = records.find((r) => isPrivateOrReservedIp(r.address));
+        if (blocked) {
+          callback(new Error(`Refusing to fetch "${hostname}" (resolves to private IP ${blocked.address})`), '', 0);
+          return;
+        }
+      }
+      if (options.all) callback(null, records);
+      else callback(null, records[0].address, records[0].family);
+    },
+    (err: NodeJS.ErrnoException) => callback(err, '', 0)
+  );
+};
+
+async function readStreamWithCap(stream: AsyncIterable<Buffer>, maxBytes: number): Promise<Buffer> {
+  const chunks: Buffer[] = [];
+  let total = 0;
+  for await (const chunk of stream) {
+    total += chunk.byteLength;
+    if (total > maxBytes) throw new Error(`Image exceeds maximum size of ${maxBytes} bytes`);
+    chunks.push(chunk);
   }
   return Buffer.concat(chunks, total);
+}
+
+function requestImage(url: URL, signal: AbortSignal): Promise<IncomingMessage> {
+  const client = url.protocol === 'https:' ? https : http;
+  return new Promise((resolve, reject) => {
+    const req = client.get(url, { lookup: publicOnlyLookup, signal }, resolve);
+    req.on('error', reject);
+  });
 }
 
 async function fetchImageBytes(rawUrl: string): Promise<Buffer> {
   let currentUrl = rawUrl;
   for (let redirects = 0; redirects <= MAX_REDIRECTS; redirects++) {
     const parsed = assertSafeHttpUrl(currentUrl);
-    await assertResolvedHostIsPublic(parsed);
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
     try {
-      const res = await fetch(parsed, { redirect: 'manual', signal: controller.signal });
-      if (res.status >= 300 && res.status < 400) {
-        await res.body?.cancel().catch(() => undefined);
-        const location = res.headers.get('location');
+      const res = await requestImage(parsed, controller.signal);
+      const status = res.statusCode ?? 0;
+      if (status >= 300 && status < 400) {
+        res.destroy();
+        const location = res.headers.location;
         if (!location) throw new Error(`Redirect missing Location header from ${currentUrl}`);
         currentUrl = new URL(location, parsed).toString();
         continue;
       }
-      if (!res.ok) {
-        await res.body?.cancel().catch(() => undefined);
-        throw new Error(`Failed to fetch image ${currentUrl}: HTTP ${res.status}`);
+      if (status < 200 || status >= 300) {
+        res.destroy();
+        throw new Error(`Failed to fetch image ${currentUrl}: HTTP ${status}`);
       }
-      return await readResponseWithCap(res, MAX_IMAGE_BYTES);
+      const contentLength = Number(res.headers['content-length']);
+      if (Number.isFinite(contentLength) && contentLength > MAX_IMAGE_BYTES) {
+        res.destroy();
+        throw new Error(`Image exceeds maximum size of ${MAX_IMAGE_BYTES} bytes`);
+      }
+      try {
+        return await readStreamWithCap(res, MAX_IMAGE_BYTES);
+      } finally {
+        res.destroy();
+      }
     } finally {
       clearTimeout(timer);
     }
@@ -268,11 +277,18 @@ export async function readImageSource(src: string, baseDir: string = process.cwd
     return fetchImageBytes(src);
   }
   const filePath = src.startsWith('file://') ? fileURLToPath(src) : path.resolve(baseDir, src);
-  const info = await stat(filePath);
-  if (info.size > MAX_IMAGE_BYTES) {
-    throw new Error(`Image file exceeds maximum size of ${MAX_IMAGE_BYTES} bytes`);
+  // One handle for the check and the read; device files and FIFOs report size 0 and never end.
+  const handle = await open(filePath, 'r');
+  try {
+    const info = await handle.stat();
+    if (!info.isFile()) throw new Error(`Image source "${src}" is not a regular file`);
+    if (info.size > MAX_IMAGE_BYTES) {
+      throw new Error(`Image file exceeds maximum size of ${MAX_IMAGE_BYTES} bytes`);
+    }
+    return await readStreamWithCap(handle.createReadStream({ autoClose: false }), MAX_IMAGE_BYTES);
+  } finally {
+    await handle.close();
   }
-  return readFile(filePath);
 }
 
 export async function decodeImageBuffer(buf: Buffer): Promise<Image> {
