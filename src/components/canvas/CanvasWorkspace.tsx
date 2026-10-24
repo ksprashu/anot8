@@ -12,6 +12,7 @@ import { Point } from '../../types';
 import { ZoomIn, ZoomOut, Maximize2, RotateCcw } from 'lucide-react';
 import { EmptyDropZone } from './EmptyDropZone';
 import { SvgOverlay } from './SvgOverlay';
+import { useDragReset } from '../../hooks/useDragReset';
 
 export interface CanvasWorkspaceProps {
   className?: string;
@@ -35,6 +36,7 @@ export const CanvasWorkspace: React.FC<CanvasWorkspaceProps> = ({
   const [isSpacePressed, setIsSpacePressed] = useState(false);
   const [isDraggingPan, setIsDraggingPan] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
+  useDragReset(() => setIsDragOver(false));
 
   // Pan tracking refs
   const panStartRef = useRef<{ clientX: number; clientY: number; panX: number; panY: number } | null>(null);

@@ -2,6 +2,7 @@ import React, { useState, useRef, useCallback } from 'react';
 import { ArrowDownToLine, FolderOpen } from 'lucide-react';
 import { useApp } from '../../state/AppContext';
 import { decodeImageFile } from '../toolbar/ImageActions';
+import { useDragReset } from '../../hooks/useDragReset';
 
 export interface DropZoneOverlayProps {
   className?: string;
@@ -21,6 +22,10 @@ export const DropZoneOverlay: React.FC<DropZoneOverlayProps> = ({
   const [isDragOver, setIsDragOver] = useState(false);
   const dragCounterRef = useRef<number>(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  useDragReset(() => {
+    dragCounterRef.current = 0;
+    setIsDragOver(false);
+  });
 
   const isMac =
     typeof navigator !== 'undefined' && /Mac|iPhone|iPod|iPad/i.test(navigator.platform || '');

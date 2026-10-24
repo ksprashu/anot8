@@ -8,6 +8,7 @@ import { useApp } from '../state/AppContext';
 import { useToast } from '../components/export/ToastNotification';
 import { SpecError } from '../spec';
 import { AgentSession, decodeSpecHash, looksLikeSpec } from './agentSession';
+import { dispatchDragReset } from '../hooks/useDragReset';
 
 declare global {
   interface Window {
@@ -71,11 +72,7 @@ export const AgentBridge: React.FC = () => {
       if (!file) return;
       e.preventDefault();
       e.stopPropagation();
-      try {
-        window.dispatchEvent(new Event('dragleave'));
-      } catch {
-        // Ignore in minimal test environments
-      }
+      dispatchDragReset();
       if (typeof file.size === 'number' && file.size > MAX_DROPPED_SPEC_BYTES) {
         toastRef.current.error('Could not read spec file', 'Spec file exceeds 10 MB limit');
         return;

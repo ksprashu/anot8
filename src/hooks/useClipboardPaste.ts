@@ -3,6 +3,7 @@ import { BaseImage, ImageOverlay } from '../types';
 import { useApp } from '../state/AppContext';
 import { generateUniqueId } from '../state/appReducer';
 import { trackPaste, TelemetryPasteSource } from '../analytics/telemetry';
+import { useDragReset } from './useDragReset';
 
 export interface UseClipboardPasteOptions {
   /** Callback fired after a new base image has been decoded and committed to state */
@@ -143,6 +144,10 @@ export function useClipboardPaste({
   const [isReplaceModalOpen, setIsReplaceModalOpen] = useState(false);
 
   const dragDepthRef = useRef(0);
+  useDragReset(() => {
+    dragDepthRef.current = 0;
+    setIsDraggingOver(false);
+  });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const committedImageSrcRef = useRef<string | null>(null);
   const pendingSourceRef = useRef<TelemetryPasteSource>('unknown');
