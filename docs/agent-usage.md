@@ -43,6 +43,8 @@ All surfaces share the same spec, compiler, and renderer (Canvas2D in the browse
 - **Points** (`from`, `to`, `at`) can be `[x, y]`, an anchor such as `"@submit"` or `"@submit.right"`, or `{ "anchor": "@submit.right", "dx": 20, "dy": -10 }`. The anchor positions are `center`, `top`, `bottom`, `left`, `right`, `top-left`, `top-right`, `bottom-left`, and `bottom-right`. Anchors can point forward to an annotation declared later. They are resolved at compile time, so if `submit` moves, everything anchored to it moves too.
 - **Numbering**: `box`, `ellipse`, `arrow`, and `pin` get badges 1..N in list order. Set `"badge": false` to hide one; it still keeps its number. `highlight`, `blur`, and `text` are unnumbered.
 - **Colors**: `red`, `amber`, `green`, `cyan`, `purple`, or any hex such as `"#F43F5E"`. Badge text color is chosen automatically for contrast.
+- **Palette**: a top-level `"palette": { "brand": "#1A73E8" }` defines named colors usable anywhere a color is accepted. `anot8 init --palette colors.json` seeds it from a file.
+- **Quiet regions**: `"outline": false` on `blur` or `highlight` drops the stroked edge from the export.
 - **Frame**: `crop` (`x, y, width, height`) is applied first, then `padding` with a `background` color.
 - **Image source** can be a path (relative to the spec file), an http(s) URL, or a data URL. The browser bridge cannot read local paths.
 
@@ -129,7 +131,7 @@ npx skills add ksprashu/anot8                    # interactive: choose agents an
 npx skills add ksprashu/anot8 -g -a claude-code -a gemini-cli -a codex -y
 ```
 
-The installer copies only the skill folder. The skill itself has no code: it uses connected MCP tools if present, otherwise `anot8` on `PATH`, a local build when run inside this repo, or `npx -y @ksprashu/anot8@latest`. That way the same skill works after a plain install, in CI, and while developing Anot8.
+The installer copies only the skill folder. The skill itself has no code: it uses connected MCP tools if present, otherwise `anot8` on `PATH`, a local build when run inside this repo, or `npx -y @ksprashu/anot8@<version>`, pinned to the release the skill was written for (a test keeps the pin equal to `package.json`). That way the same skill works after a plain install, in CI, and while developing Anot8.
 
 Within this repo, `.claude/skills/` and `.agents/skills/` are symlinks to `skills/`, so Claude Code and `.agents`-aware harnesses pick up the skills without installing them. `skills/cloudflare-domain` is marked `metadata.internal: true` and is not offered by `npx skills add`.
 

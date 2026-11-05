@@ -56,7 +56,8 @@ Workflow: anot8_inspect_image (or anot8_init_spec) → write a spec → anot8_re
 - Points (arrow from/to, pin at, text at): [x, y], "@id" or "@id.<center|top|bottom|left|right|top-left|top-right|bottom-left|bottom-right>", or { "anchor": "@id.right", "dx": 20, "dy": 0 }.
 - Give annotations ids so arrows/pins/labels can anchor to them and ops can target them; anchors stay live when the target moves.
 - box/ellipse/arrow/pin get numbered badges 1..N in list order (set "badge": false to hide); highlight, blur and text are unnumbered.
-- Colors: red, amber, green, cyan, purple, or "#RRGGBB".
+- Colors: red, amber, green, cyan, purple, "#RRGGBB", or a name from the spec's top-level "palette": { "brand": "#1A73E8" }.
+- highlight and blur take "outline": false to drop the stroked edge from the export (e.g. a quiet redaction).
 - frame: { crop: {x,y,width,height}, padding, background } is applied at render time.
 - Relative image paths resolve against the spec file's directory (or baseDir).`;
 
@@ -274,12 +275,13 @@ export function createMcpServer(): McpServer {
       title: 'Initialize Anot8 spec',
       description:
         'Inspects an image and creates a starter v1 Anot8 spec with natural width and height filled in. ' +
-        'Optionally includes initial annotations/frame/defaults and writes the spec to disk.',
+        'Optionally includes initial annotations/frame/palette/defaults and writes the spec to disk.',
       inputSchema: {
         source: z.string().describe('Image path, URL, or data URL'),
         output: z.string().optional().describe('Optional path to write the .anot8.json spec file'),
         baseDir: z.string().optional().describe('Directory for resolving relative paths (default: cwd)'),
         frame: z.unknown().optional().describe('Optional frame { crop, padding, background }'),
+        palette: z.unknown().optional().describe('Optional named colors { "brand": "#1A73E8" }, usable as color values'),
         defaults: z.unknown().optional().describe('Optional default style { color, strokeWidth, fillOpacity, fontSize }'),
         annotations: z.array(z.unknown()).optional().describe('Optional initial annotations'),
       },
@@ -290,6 +292,7 @@ export function createMcpServer(): McpServer {
         output?: string;
         baseDir?: string;
         frame?: unknown;
+        palette?: unknown;
         defaults?: unknown;
         annotations?: unknown[];
       }) => {
@@ -300,6 +303,7 @@ export function createMcpServer(): McpServer {
           baseDir,
           outPath,
           frame: args.frame ? (parseJsonArg(args.frame, 'frame') as FrameSpec) : undefined,
+          palette: args.palette ? (parseJsonArg(args.palette, 'palette') as DocumentSpec['palette']) : undefined,
           defaults: args.defaults ? (parseJsonArg(args.defaults, 'defaults') as DocumentSpec['defaults']) : undefined,
           annotations: args.annotations
             ? (args.annotations.map((a, i) => parseJsonArg(a, `annotations[${i}]`)) as AnnotationSpec[])

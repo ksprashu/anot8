@@ -196,7 +196,7 @@ We use a standard GitHub feature branch and Pull Request workflow:
 
 ### Releasing the npm package
 
-CI builds and packs the CLI on every push and pull request (the tarball is attached to the run as `npm-package`). On a push to `main`, it publishes `@ksprashu/anot8` to npm when `package.json` has a version that isn't on npm yet. To release, bump the version in your PR (`npm version patch --no-git-tag-version`) and merge it.
+CI builds and packs the CLI on every push and pull request (the tarball is attached to the run as `npm-package`). On a push to `main`, it publishes `@ksprashu/anot8` to npm when `package.json` has a version that isn't on npm yet. To release, bump the version in your PR (`npm version patch --no-git-tag-version`), update the `@ksprashu/anot8@<version>` pins in `skills/anot8/SKILL.md` to match (a test fails until you do), and merge it.
 
 Publishing uses [npm trusted publishing](https://docs.npmjs.com/trusted-publishers): GitHub's OIDC token authenticates the `ci.yml` workflow, so no npm token is stored in the repo, and every release gets a provenance attestation.
 

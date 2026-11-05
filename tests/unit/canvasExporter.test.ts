@@ -607,6 +607,19 @@ describe('1:1 Native Composite Canvas Exporter Unit Tests', () => {
       expect(mockCtx.restore).toHaveBeenCalled();
     });
 
+    it('E6.5b: Skips the blur and highlight border stroke when showOutline is false', () => {
+      const canvas = createCanvas(800, 600);
+      const mockCtx = canvas.getContext('2d')!;
+      const quiet = { ...mockBlur1, style: { ...mockBlur1.style, showOutline: false } };
+
+      rasterizeAnnotation(mockCtx, quiet);
+      rasterizeAnnotation(mockCtx, { ...quiet, geometry: { type: 'highlight', x: 200, y: 150, width: 300, height: 100 } });
+
+      expect(mockCtx.stroke).not.toHaveBeenCalled();
+      expect(mockCtx.save).toHaveBeenCalledTimes(2);
+      expect(mockCtx.restore).toHaveBeenCalledTimes(2);
+    });
+
     it('E6.6: Stage sequence: executes blur baking before highlight backdrop and vector shapes', async () => {
       const mockHl: Annotation = {
         id: 'hl-1',

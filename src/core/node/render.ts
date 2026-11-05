@@ -200,6 +200,7 @@ export async function buildStarterSpec(options: {
   baseDir?: string;
   outPath?: string;
   frame?: FrameSpec;
+  palette?: DocumentSpec['palette'];
   defaults?: DocumentSpec['defaults'];
   annotations?: AnnotationSpec[];
 }): Promise<{ spec: DocumentSpec; width: number; height: number }> {
@@ -225,6 +226,7 @@ export async function buildStarterSpec(options: {
     version: SPEC_VERSION,
     image: { source, width, height },
     ...(options.frame ? { frame: options.frame } : {}),
+    ...(options.palette ? { palette: options.palette } : {}),
     ...(options.defaults ? { defaults: options.defaults } : {}),
     annotations: options.annotations ?? [],
   };

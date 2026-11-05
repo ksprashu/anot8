@@ -61,6 +61,19 @@ describe('anot8 CLI', () => {
     }
   });
 
+  it('init --palette seeds named colors from a file, and rejects a bad palette', () => {
+    const palette = path.join(tmp, 'brand.json');
+    const out = path.join(tmp, 'branded.anot8.json');
+    writeFileSync(palette, JSON.stringify({ brand: '#1A73E8' }));
+    expect(run(['init', path.join(FIXTURES, 'screen.png'), '-o', out, '--palette', palette]).code).toBe(0);
+    expect(JSON.parse(readFileSync(out, 'utf8')).palette).toEqual({ brand: '#1A73E8' });
+
+    writeFileSync(palette, JSON.stringify({ red: '#000000' }));
+    const bad = run(['init', path.join(FIXTURES, 'screen.png'), '-o', out, '--palette', palette]);
+    expect(bad.code).not.toBe(0);
+    expect(bad.stderr).toContain('palette.red');
+  });
+
   it('render writes a PNG and markdown notes with bounds', () => {
     const out = path.join(tmp, 'shapes.png');
     const md = path.join(tmp, 'shapes.md');

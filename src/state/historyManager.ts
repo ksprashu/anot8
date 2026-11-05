@@ -51,7 +51,8 @@ export function isSnapshotEqual(a: HistorySnapshot, b: HistorySnapshot): boolean
       annA.style.color !== annB.style.color ||
       annA.style.strokeWidth !== annB.style.strokeWidth ||
       annA.style.fillOpacity !== annB.style.fillOpacity ||
-      annA.style.showBadge !== annB.style.showBadge
+      annA.style.showBadge !== annB.style.showBadge ||
+      annA.style.showOutline !== annB.style.showOutline
     ) {
       return false;
     }

@@ -76,6 +76,46 @@ describe('compileSpec', () => {
     expect(doc.annotations[1].style).toEqual({ color: '#ff3366', strokeWidth: 9, fillOpacity: 0.3, showBadge: false });
   });
 
+  it('resolves palette names to hex, including in defaults', () => {
+    const doc = compileSpec(
+      baseSpec(
+        [
+          { type: 'box', x: 0, y: 0, width: 1, height: 1 },
+          { type: 'box', x: 0, y: 0, width: 1, height: 1, color: 'warn' },
+          { type: 'box', x: 0, y: 0, width: 1, height: 1, color: 'cyan' },
+        ],
+        { palette: { brand: '#1A73E8', warn: '#FBBC04' }, defaults: { color: 'brand' } }
+      ),
+      dims
+    );
+    expect(doc.annotations.map((a) => a.style.color)).toEqual(['#1A73E8', '#FBBC04', 'cyan']);
+  });
+
+  it('reports unknown color names and palette names that shadow presets', () => {
+    const unknown = validateSpec(
+      baseSpec([{ type: 'box', x: 0, y: 0, width: 1, height: 1, color: 'brand' }], { defaults: { color: 'nope' } }),
+      dims
+    );
+    expect(unknown.map((i) => i.path)).toEqual(['defaults.color', 'annotations[0].color']);
+    expect(validateSpec(baseSpec([], { palette: { red: '#000000' } }), dims)[0].path).toBe('palette.red');
+    expect(validateSpec(baseSpec([], { palette: { brand: 'blue' } }), dims)[0].path).toBe('palette.brand');
+  });
+
+  it('turns outline: false on highlight and blur into showOutline: false, and rejects it elsewhere', () => {
+    const doc = compileSpec(
+      baseSpec([
+        { type: 'blur', x: 0, y: 0, width: 10, height: 10, outline: false },
+        { type: 'highlight', x: 0, y: 0, width: 10, height: 10, outline: false },
+        { type: 'blur', x: 0, y: 0, width: 10, height: 10, outline: true },
+      ]),
+      dims
+    );
+    expect(doc.annotations.map((a) => a.style.showOutline)).toEqual([false, false, undefined]);
+    expect(validateSpec(baseSpec([{ type: 'box', x: 0, y: 0, width: 1, height: 1, outline: false }]), dims)[0].path).toBe(
+      'annotations[0]'
+    );
+  });
+
   it('resolves anchors, including forward references and offsets', () => {
     const doc = compileSpec(
       baseSpec([
@@ -176,6 +216,7 @@ describe('toSpec', () => {
           { type: 'pin', id: 'p', at: [5, 6] },
           { type: 'highlight', id: 'h', x: 0, y: 0, width: 10, height: 10 },
           { type: 'blur', id: 'bl', x: 0, y: 0, width: 10, height: 10 },
+          { type: 'blur', id: 'quiet', x: 20, y: 0, width: 10, height: 10, outline: false },
           { type: 'text', id: 't', at: [9, 9], text: 'two\nlines', align: 'center', fontSize: 22 },
         ],
         { frame: { padding: 12, background: '#000' } }

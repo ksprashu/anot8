@@ -19,6 +19,15 @@ describe('Milestone M-Rel-1: Governance, Disclaimers & Documentation Test Suite'
     expect(licenseContent).toContain('Copyright 2026 Prashanth Subrahmanyam');
   });
 
+  it('pins every package command in the anot8 skill to the version in package.json', () => {
+    const { version } = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf-8'));
+    const skill = fs.readFileSync(path.join(rootDir, 'skills/anot8/SKILL.md'), 'utf-8');
+    // Commands the skill tells an agent to run: npx calls and MCP "args" arrays.
+    const commands = [...skill.matchAll(/npx -y (@ksprashu\/anot8[\w@.-]*)|"(@ksprashu\/anot8[^"]*)"/g)].map((m) => m[1] ?? m[2]);
+    expect(commands.length).toBeGreaterThan(0);
+    expect(new Set(commands)).toEqual(new Set([`@ksprashu/anot8@${version}`]));
+  });
+
   it('verifies README.md exists and contains the mandatory non-affiliation disclaimer callout banner', () => {
     const readmePath = path.join(rootDir, 'README.md');
     expect(fs.existsSync(readmePath)).toBe(true);

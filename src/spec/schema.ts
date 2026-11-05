@@ -67,12 +67,31 @@ export const PointSchema = z
   ])
   .describe('A point: [x, y], "@id.position", or { anchor, dx, dy }');
 
+export const PRESET_COLOR_NAMES = ['red', 'amber', 'green', 'cyan', 'purple'] as const;
+const HEX_PATTERN = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
+export const PALETTE_NAME_PATTERN = /^[A-Za-z][A-Za-z0-9_-]{0,31}$/;
+export const MAX_PALETTE_COLORS = 64;
+
+const HexColorSchema = z.string().regex(HEX_PATTERN, 'Use a hex color like "#FF3366"');
+
 export const ColorSchema = z
   .union([
-    z.enum(['red', 'amber', 'green', 'cyan', 'purple']),
-    z.string().regex(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/, 'Use a preset name or a hex color like "#FF3366"'),
+    z.enum(PRESET_COLOR_NAMES),
+    z.string().regex(HEX_PATTERN, 'Use a preset name or a hex color like "#FF3366"'),
+    z.string().regex(PALETTE_NAME_PATTERN, 'Use a preset name, a palette name, or a hex color like "#FF3366"'),
   ])
-  .describe('Preset (red, amber, green, cyan, purple) or hex "#RRGGBB"');
+  .describe('Preset (red, amber, green, cyan, purple), a name from the spec palette, or hex "#RRGGBB"');
+
+export const PaletteSchema = z
+  .record(
+    z
+      .string()
+      .regex(PALETTE_NAME_PATTERN, 'Palette names start with a letter and may contain letters, digits, "_" and "-"')
+      .refine((name) => !(PRESET_COLOR_NAMES as readonly string[]).includes(name), 'Palette names cannot reuse a preset name'),
+    HexColorSchema
+  )
+  .refine((p) => Object.keys(p).length <= MAX_PALETTE_COLORS, `At most ${MAX_PALETTE_COLORS} palette colors`)
+  .describe('Named hex colors, e.g. { "brand": "#1A73E8" }; use the names anywhere a color is accepted');
 
 const common = {
   id: z
@@ -103,11 +122,23 @@ export const EllipseSpec = z
   .describe('Numbered ellipse callout, given by its bounding box');
 
 export const HighlightSpec = z
-  .strictObject({ type: z.literal('highlight'), ...common, ...rect, radius: z.number().nonnegative().optional() })
+  .strictObject({
+    type: z.literal('highlight'),
+    ...common,
+    ...rect,
+    radius: z.number().nonnegative().optional(),
+    outline: z.boolean().optional().describe('Stroke the region\'s edge in the export (default true)'),
+  })
   .describe('Unnumbered spotlight: dims everything outside the highlighted regions');
 
 export const BlurSpec = z
-  .strictObject({ type: z.literal('blur'), ...common, ...rect, radius: z.number().nonnegative().optional() })
+  .strictObject({
+    type: z.literal('blur'),
+    ...common,
+    ...rect,
+    radius: z.number().nonnegative().optional(),
+    outline: z.boolean().optional().describe('Stroke the region\'s edge in the export (default true)'),
+  })
   .describe('Unnumbered blur for redacting sensitive regions');
 
 export const ArrowSpec = z
@@ -162,6 +193,7 @@ export const DocumentSpecSchema = z
       height: z.number().int().positive().optional().describe('Natural height; filled in when known'),
     }),
     frame: FrameSpecSchema.optional(),
+    palette: PaletteSchema.optional(),
     defaults: z
       .strictObject({
         color: ColorSchema.optional(),
