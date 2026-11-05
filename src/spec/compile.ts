@@ -17,6 +17,7 @@ import {
   AnnotationSpec,
   DocumentSpec,
   FrameSpec,
+  PRESET_COLOR_NAMES,
   PointSpec,
   SPEC_VERSION,
   SpecError,
@@ -135,6 +136,19 @@ export function compileSpec(input: unknown, dims?: ImageDimensions): CompiledDoc
     }
   });
 
+  // Palette names become hex here, so everything downstream sees only presets and hex.
+  const palette = spec.palette ?? {};
+  const colorOf = (color: string | undefined, path: string): AnnotationColor | undefined => {
+    if (color === undefined || color.startsWith('#') || (PRESET_COLOR_NAMES as readonly string[]).includes(color)) {
+      return color as AnnotationColor | undefined;
+    }
+    if (Object.prototype.hasOwnProperty.call(palette, color)) return palette[color] as AnnotationColor;
+    issues.push({ path, message: `Unknown color "${color}"; define it in palette or use a preset or hex color` });
+    return undefined;
+  };
+  const defaultColor = colorOf(defaults.color, 'defaults.color') ?? DEFAULT_COLOR;
+  const colors = spec.annotations.map((a, i) => colorOf(a.color, `annotations[${i}].color`) ?? defaultColor);
+
   spec.annotations.forEach((a, i) => {
     for (const [field, point] of pointFields(a)) {
       const target = anchorTarget(point);
@@ -228,10 +242,11 @@ export function compileSpec(input: unknown, dims?: ImageDimensions): CompiledDoc
     index: 0,
     geometry: resolveGeometry(i),
     style: {
-      color: (a.color ?? defaults.color ?? DEFAULT_COLOR) as AnnotationColor,
+      color: colors[i],
       strokeWidth: a.strokeWidth ?? defaults.strokeWidth ?? DEFAULT_STROKE_WIDTH,
       fillOpacity: a.fillOpacity ?? defaults.fillOpacity ?? DEFAULT_FILL_OPACITY,
       ...(a.badge === false ? { showBadge: false } : {}),
+      ...((a.type === 'blur' || a.type === 'highlight') && a.outline === true ? { showOutline: true } : {}),
     },
     note: a.note ?? '',
     createdAt: 0,
@@ -298,6 +313,7 @@ function annotationToSpec(ann: Annotation): AnnotationSpec {
         width: round(g.width),
         height: round(g.height),
         ...(g.borderRadius !== undefined ? { radius: g.borderRadius } : {}),
+        ...(g.type !== 'box' && ann.style.showOutline === true ? { outline: true } : {}),
       };
     case 'ellipse':
       return {

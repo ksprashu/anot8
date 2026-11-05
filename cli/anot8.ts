@@ -9,7 +9,7 @@ import { parseArgs } from 'node:util';
 import { z } from 'zod';
 import { MarkdownExportFormat } from '../src/export/markdownSerializer';
 import { encodeSpecHash } from '../src/bridge/agentSession';
-import { SpecError, applyOps, compileSpec, getSpecJsonSchema, OpsSchema, parseSpec } from '../src/spec';
+import { DocumentSpec, SpecError, applyOps, compileSpec, getSpecJsonSchema, OpsSchema, parseSpec } from '../src/spec';
 import {
   buildStarterSpec,
   inspectImage,
@@ -25,7 +25,8 @@ const USAGE = `anot8 — parametric screenshot annotation
 
 Usage:
   anot8 inspect <image>                          Print image dimensions as JSON
-  anot8 init <image> [-o spec.json]              Write a starter spec for an image
+  anot8 init <image> [-o spec.json] [--palette colors.json]
+                                                 Write a starter spec; --palette seeds named colors
   anot8 render <spec.json|-> [-o out.png] [--md notes.md] [--format list|table|checklist|report] [--scale n]
   anot8 markdown <spec.json|-> [--format list|table|checklist|report] [-o notes.md]
   anot8 validate <spec.json|->                   Check a spec; prints issues with paths
@@ -98,6 +99,7 @@ function parseCommandArgs(args: string[]) {
         'ops-file': { type: 'string' },
         'in-place': { type: 'boolean' },
         'app-url': { type: 'string' },
+        palette: { type: 'string' },
         help: { type: 'boolean', short: 'h' },
       },
     });
@@ -125,7 +127,8 @@ async function main(argv: string[]): Promise<void> {
     case 'init': {
       const image = requirePositional(positionals, 'image');
       const out = values.out ?? `${image.replace(/\.[^./\\]+$/, '')}.anot8.json`;
-      const { spec, width, height } = await buildStarterSpec({ image, outPath: out });
+      const palette = values.palette ? ((await readJson(values.palette)).data as DocumentSpec['palette']) : undefined;
+      const { spec, width, height } = await buildStarterSpec({ image, outPath: out, palette });
       await writeFile(out, `${JSON.stringify(spec, null, 2)}\n`);
       print({ spec: out, width, height });
       return;

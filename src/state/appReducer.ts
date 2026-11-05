@@ -271,6 +271,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
           strokeWidth: action.payload.style?.strokeWidth ?? state.activeStrokeWidth,
           fillOpacity: action.payload.style?.fillOpacity ?? state.activeFillOpacity,
           ...(action.payload.style?.showBadge !== undefined ? { showBadge: action.payload.style.showBadge } : {}),
+          ...(action.payload.style?.showOutline !== undefined ? { showOutline: action.payload.style.showOutline } : {}),
         },
         note: action.payload.note ?? '',
         createdAt: now,

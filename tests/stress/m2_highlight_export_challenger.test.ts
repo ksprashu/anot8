@@ -909,7 +909,7 @@ describe('M2 Challenger Suite: Destination-Out Highlight Export & State Isolatio
           height: 456.789123,
           borderRadius: 4.5,
         },
-        style: { color: 'amber', strokeWidth: 3.5, fillOpacity: 0.15 },
+        style: { color: 'amber', strokeWidth: 3.5, fillOpacity: 0.15, showOutline: true },
         note: 'Subpixel coordinates',
         createdAt: 1000,
         updatedAt: 1000,

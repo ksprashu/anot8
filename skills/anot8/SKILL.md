@@ -23,21 +23,21 @@ This skill only contains instructions. The engine is the `@ksprashu/anot8` npm p
 2. **Otherwise use the CLI** through a shell. Resolve the command once and reuse it:
    - `anot8` if it is on `PATH` (`command -v anot8`)
    - inside an Anot8 source checkout (`cli/anot8.ts` exists): `npm run build:cli` once, then `node dist-cli/anot8.js`
-   - anywhere else: `npx -y @ksprashu/anot8@latest`
+   - anywhere else: `npx -y @ksprashu/anot8@1.1.0`. Keep the version: it is the release this skill was written against, and a floating `@latest` would run whatever was published most recently.
 
    Below, `anot8 <cmd>` means whichever command you resolved. After `render`, open the output PNG with your image/file viewing tool to check it visually; the command also prints each annotation's `bounds` as JSON.
 3. **No Node.js** (`node --version` fails or is below 20): ask the user to install Node 20+, or hand them the web app at https://anot8.ksprashu.dev/ with a spec they can drop onto the canvas.
 
 ### Optional: register the MCP server
 
-If the user wants the MCP tools for future sessions, offer to register `npx -y @ksprashu/anot8 mcp` as a stdio server. Ask before editing their agent config.
+If the user wants the MCP tools for future sessions, offer to register `npx -y @ksprashu/anot8@1.1.0 mcp` as a stdio server. Ask before editing their agent config.
 
 | Harness | Command |
 |---|---|
-| Claude Code | `claude mcp add -s user anot8 -- npx -y @ksprashu/anot8 mcp` |
-| Gemini CLI | `gemini mcp add -s user anot8 npx -y @ksprashu/anot8 mcp` |
-| Codex CLI | `codex mcp add anot8 -- npx -y @ksprashu/anot8 mcp` |
-| Any MCP client (JSON config) | `{ "mcpServers": { "anot8": { "command": "npx", "args": ["-y", "@ksprashu/anot8", "mcp"] } } }` |
+| Claude Code | `claude mcp add -s user anot8 -- npx -y @ksprashu/anot8@1.1.0 mcp` |
+| Gemini CLI | `gemini mcp add -s user anot8 npx -y @ksprashu/anot8@1.1.0 mcp` |
+| Codex CLI | `codex mcp add anot8 -- npx -y @ksprashu/anot8@1.1.0 mcp` |
+| Any MCP client (JSON config) | `{ "mcpServers": { "anot8": { "command": "npx", "args": ["-y", "@ksprashu/anot8@1.1.0", "mcp"] } } }` |
 
 The MCP server picks up new tools only after the harness restarts; keep using the CLI in the current session.
 
@@ -136,13 +136,16 @@ If you can drive a browser (e.g. a DevTools MCP), the open app exposes `window.a
 | `ellipse` | `x, y, width, height` (bounding box) | Yes (225° top-left apex) | Converted to `cx, cy, rx, ry` at compile time |
 | `arrow` | `from, to` | Yes (at `from` tail) | Use `"badge": false` when connecting a `text` label to a `box` |
 | `pin` | `at` | Yes (inside teardrop head) | Tip touches `at`; head extends above `at` |
-| `highlight` | `x, y, width, height, radius?` | No (`index: 0`) | Additive spotlight: dims outside regions with `rgba(0,0,0,0.68)`, punches out all highlight rects cleanly |
-| `blur` | `x, y, width, height, radius?` | No (`index: 0`) | Destructive Gaussian blur baked into exported pixels for redaction |
+| `highlight` | `x, y, width, height, radius?, outline?` | No (`index: 0`) | Additive spotlight: dims outside regions with `rgba(0,0,0,0.68)`, punches out all highlight rects cleanly |
+| `blur` | `x, y, width, height, radius?, outline?` | No (`index: 0`) | Destructive Gaussian blur baked into exported pixels for redaction |
 | `text` | `at, text, fontSize?, align?` | No (`index: 0`) | High-contrast pill label; `at` is top edge (`left`/`center`/`right` aligned) |
+
+`highlight` and `blur` change the image itself and draw no outline in the export, so a redaction or spotlight doesn't draw attention to itself. Set `"outline": true` on one to stroke its edge in the annotation color.
 
 ### Colors
 - **Presets**: `"red"` (`#EF4444`), `"amber"` (`#F59E0B`), `"green"` (`#10B981`), `"cyan"` (`#06B6D4`), `"purple"` (`#8B5CF6`).
 - **Custom Hex**: Any `"#RGB"` or `"#RRGGBB"`. Badge/label text color (`#1E293B` vs `#FFFFFF`) is automatically selected for maximum WCAG contrast.
+- **Palette**: a top-level `"palette": { "brand": "#1A73E8", "warn": "#EA4335" }` names hex colors, usable anywhere a color is (including `defaults.color`). Names start with a letter and cannot reuse a preset name; an unknown name is a validation error. To keep a set of screenshots on brand, write the palette once to a JSON file and seed each spec with `anot8 init shot.png --palette brand.json` (or `anot8_init_spec` with `palette`).
 
 ---
 
