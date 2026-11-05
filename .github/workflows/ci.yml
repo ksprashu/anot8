@@ -17,7 +17,9 @@ permissions:
 jobs:
   validate:
     name: Typecheck, Lint, Test & Build
-    runs-on: ubuntu-latest
+    # Pinned: the golden tests draw text in the image's system-ui font, and
+    # ubuntu-latest moving to 26.04 changed its glyphs enough to fail hex-text.
+    runs-on: ubuntu-24.04
 
     strategy:
       matrix:
