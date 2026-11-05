@@ -467,7 +467,7 @@ describe('1:1 Native Composite Canvas Exporter Unit Tests', () => {
       expect(backdropCalls).toHaveLength(1);
     });
 
-    it('E5.4: Rasterizes highlight border stroke and omits badge for unnumbered visual effect', () => {
+    it('E5.4: Rasterizes the opt-in highlight border stroke and omits badge for unnumbered visual effect', () => {
       const canvas = createCanvas(800, 600);
       const ctx = canvas.getContext('2d')!;
 
@@ -481,7 +481,7 @@ describe('1:1 Native Composite Canvas Exporter Unit Tests', () => {
         },
       });
 
-      rasterizeAnnotation(ctx, mockHighlight1);
+      rasterizeAnnotation(ctx, { ...mockHighlight1, style: { ...mockHighlight1.style, showOutline: true } });
 
       expect(ctx.stroke).toHaveBeenCalled();
       expect(strokeStyles).toContain(PRESET_COLORS.amber.stroke);
@@ -595,11 +595,11 @@ describe('1:1 Native Composite Canvas Exporter Unit Tests', () => {
       expect(ctx.drawImage).toHaveBeenCalledTimes(1);
     });
 
-    it('E6.5: Rasterizes blur border stroke and top-left badge in Stage 2', () => {
+    it('E6.5: Rasterizes the blur border stroke in Stage 2 when showOutline is true', () => {
       const canvas = createCanvas(800, 600);
       const mockCtx = canvas.getContext('2d')!;
 
-      rasterizeAnnotation(mockCtx, mockBlur1);
+      rasterizeAnnotation(mockCtx, { ...mockBlur1, style: { ...mockBlur1.style, showOutline: true } });
 
       expect(mockCtx.beginPath).toHaveBeenCalled();
       expect(mockCtx.stroke).toHaveBeenCalled();
@@ -607,10 +607,10 @@ describe('1:1 Native Composite Canvas Exporter Unit Tests', () => {
       expect(mockCtx.restore).toHaveBeenCalled();
     });
 
-    it('E6.5b: Skips the blur and highlight border stroke when showOutline is false', () => {
+    it('E6.5b: Draws no blur or highlight border stroke by default', () => {
       const canvas = createCanvas(800, 600);
       const mockCtx = canvas.getContext('2d')!;
-      const quiet = { ...mockBlur1, style: { ...mockBlur1.style, showOutline: false } };
+      const quiet = mockBlur1;
 
       rasterizeAnnotation(mockCtx, quiet);
       rasterizeAnnotation(mockCtx, { ...quiet, geometry: { type: 'highlight', x: 200, y: 150, width: 300, height: 100 } });

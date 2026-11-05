@@ -279,7 +279,7 @@ export function rasterizeAnnotation(
 
     case 'highlight': {
       const { x, y, width, height, borderRadius = 4 } = geometry;
-      if (style.showOutline === false) break;
+      if (style.showOutline !== true) break;
       ctx.beginPath();
       drawRoundRect(ctx, x, y, width, height, borderRadius);
       ctx.strokeStyle = colorDef.stroke;
@@ -293,7 +293,7 @@ export function rasterizeAnnotation(
 
     case 'blur': {
       const { x, y, width, height, borderRadius = 2 } = geometry;
-      if (style.showOutline === false) break;
+      if (style.showOutline !== true) break;
       ctx.beginPath();
       drawRoundRect(ctx, x, y, width, height, borderRadius);
       ctx.strokeStyle = colorDef.stroke;

@@ -98,7 +98,7 @@ export interface AnnotationStyle {
   strokeWidth: number; // In natural image pixels (e.g. 2, 3, 4, 6, 8)
   fillOpacity: number; // 0.0 (transparent) to 1.0 (solid)
   showBadge?: boolean; // Draw the numbered badge (default true); the sequence number is kept either way
-  showOutline?: boolean; // Stroke the edge of a blur or highlight region in the export (default true)
+  showOutline?: boolean; // Stroke the edge of a blur or highlight region in the export (default false)
 }
 
 export interface Annotation {

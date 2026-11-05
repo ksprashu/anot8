@@ -44,7 +44,7 @@ All surfaces share the same spec, compiler, and renderer (Canvas2D in the browse
 - **Numbering**: `box`, `ellipse`, `arrow`, and `pin` get badges 1..N in list order. Set `"badge": false` to hide one; it still keeps its number. `highlight`, `blur`, and `text` are unnumbered.
 - **Colors**: `red`, `amber`, `green`, `cyan`, `purple`, or any hex such as `"#F43F5E"`. Badge text color is chosen automatically for contrast.
 - **Palette**: a top-level `"palette": { "brand": "#1A73E8" }` defines named colors usable anywhere a color is accepted. `anot8 init --palette colors.json` seeds it from a file.
-- **Quiet regions**: `"outline": false` on `blur` or `highlight` drops the stroked edge from the export.
+- **Regions**: `blur` and `highlight` change the image and draw no outline in the export. `"outline": true` strokes the edge.
 - **Frame**: `crop` (`x, y, width, height`) is applied first, then `padding` with a `background` color.
 - **Image source** can be a path (relative to the spec file), an http(s) URL, or a data URL. The browser bridge cannot read local paths.
 

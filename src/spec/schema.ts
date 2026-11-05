@@ -127,7 +127,7 @@ export const HighlightSpec = z
     ...common,
     ...rect,
     radius: z.number().nonnegative().optional(),
-    outline: z.boolean().optional().describe('Stroke the region\'s edge in the export (default true)'),
+    outline: z.boolean().optional().describe('Stroke the region\'s edge in the export (default false)'),
   })
   .describe('Unnumbered spotlight: dims everything outside the highlighted regions');
 
@@ -137,7 +137,7 @@ export const BlurSpec = z
     ...common,
     ...rect,
     radius: z.number().nonnegative().optional(),
-    outline: z.boolean().optional().describe('Stroke the region\'s edge in the export (default true)'),
+    outline: z.boolean().optional().describe('Stroke the region\'s edge in the export (default false)'),
   })
   .describe('Unnumbered blur for redacting sensitive regions');
 

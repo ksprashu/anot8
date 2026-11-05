@@ -57,7 +57,7 @@ Workflow: anot8_inspect_image (or anot8_init_spec) → write a spec → anot8_re
 - Give annotations ids so arrows/pins/labels can anchor to them and ops can target them; anchors stay live when the target moves.
 - box/ellipse/arrow/pin get numbered badges 1..N in list order (set "badge": false to hide); highlight, blur and text are unnumbered.
 - Colors: red, amber, green, cyan, purple, "#RRGGBB", or a name from the spec's top-level "palette": { "brand": "#1A73E8" }.
-- highlight and blur take "outline": false to drop the stroked edge from the export (e.g. a quiet redaction).
+- highlight and blur change the image and add no outline; set "outline": true to stroke the region's edge in the export.
 - frame: { crop: {x,y,width,height}, padding, background } is applied at render time.
 - Relative image paths resolve against the spec file's directory (or baseDir).`;
 

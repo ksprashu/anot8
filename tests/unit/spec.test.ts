@@ -101,17 +101,18 @@ describe('compileSpec', () => {
     expect(validateSpec(baseSpec([], { palette: { brand: 'blue' } }), dims)[0].path).toBe('palette.brand');
   });
 
-  it('turns outline: false on highlight and blur into showOutline: false, and rejects it elsewhere', () => {
+  it('leaves highlight and blur unoutlined unless outline: true, and rejects outline elsewhere', () => {
     const doc = compileSpec(
       baseSpec([
+        { type: 'blur', x: 0, y: 0, width: 10, height: 10 },
         { type: 'blur', x: 0, y: 0, width: 10, height: 10, outline: false },
-        { type: 'highlight', x: 0, y: 0, width: 10, height: 10, outline: false },
+        { type: 'highlight', x: 0, y: 0, width: 10, height: 10, outline: true },
         { type: 'blur', x: 0, y: 0, width: 10, height: 10, outline: true },
       ]),
       dims
     );
-    expect(doc.annotations.map((a) => a.style.showOutline)).toEqual([false, false, undefined]);
-    expect(validateSpec(baseSpec([{ type: 'box', x: 0, y: 0, width: 1, height: 1, outline: false }]), dims)[0].path).toBe(
+    expect(doc.annotations.map((a) => a.style.showOutline)).toEqual([undefined, undefined, true, true]);
+    expect(validateSpec(baseSpec([{ type: 'box', x: 0, y: 0, width: 1, height: 1, outline: true }]), dims)[0].path).toBe(
       'annotations[0]'
     );
   });
@@ -216,7 +217,7 @@ describe('toSpec', () => {
           { type: 'pin', id: 'p', at: [5, 6] },
           { type: 'highlight', id: 'h', x: 0, y: 0, width: 10, height: 10 },
           { type: 'blur', id: 'bl', x: 0, y: 0, width: 10, height: 10 },
-          { type: 'blur', id: 'quiet', x: 20, y: 0, width: 10, height: 10, outline: false },
+          { type: 'blur', id: 'outlined', x: 20, y: 0, width: 10, height: 10, outline: true },
           { type: 'text', id: 't', at: [9, 9], text: 'two\nlines', align: 'center', fontSize: 22 },
         ],
         { frame: { padding: 12, background: '#000' } }

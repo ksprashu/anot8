@@ -246,7 +246,7 @@ export function compileSpec(input: unknown, dims?: ImageDimensions): CompiledDoc
       strokeWidth: a.strokeWidth ?? defaults.strokeWidth ?? DEFAULT_STROKE_WIDTH,
       fillOpacity: a.fillOpacity ?? defaults.fillOpacity ?? DEFAULT_FILL_OPACITY,
       ...(a.badge === false ? { showBadge: false } : {}),
-      ...((a.type === 'blur' || a.type === 'highlight') && a.outline === false ? { showOutline: false } : {}),
+      ...((a.type === 'blur' || a.type === 'highlight') && a.outline === true ? { showOutline: true } : {}),
     },
     note: a.note ?? '',
     createdAt: 0,
@@ -313,7 +313,7 @@ function annotationToSpec(ann: Annotation): AnnotationSpec {
         width: round(g.width),
         height: round(g.height),
         ...(g.borderRadius !== undefined ? { radius: g.borderRadius } : {}),
-        ...(g.type !== 'box' && ann.style.showOutline === false ? { outline: false } : {}),
+        ...(g.type !== 'box' && ann.style.showOutline === true ? { outline: true } : {}),
       };
     case 'ellipse':
       return {

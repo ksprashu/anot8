@@ -136,9 +136,11 @@ If you can drive a browser (e.g. a DevTools MCP), the open app exposes `window.a
 | `ellipse` | `x, y, width, height` (bounding box) | Yes (225° top-left apex) | Converted to `cx, cy, rx, ry` at compile time |
 | `arrow` | `from, to` | Yes (at `from` tail) | Use `"badge": false` when connecting a `text` label to a `box` |
 | `pin` | `at` | Yes (inside teardrop head) | Tip touches `at`; head extends above `at` |
-| `highlight` | `x, y, width, height, radius?, outline?` | No (`index: 0`) | Additive spotlight (`"outline": false` keeps only the dimming): dims outside regions with `rgba(0,0,0,0.68)`, punches out all highlight rects cleanly |
-| `blur` | `x, y, width, height, radius?, outline?` | No (`index: 0`) | Destructive Gaussian blur baked into exported pixels for redaction; `"outline": false` drops the stroked edge for a quiet, publishable redaction |
+| `highlight` | `x, y, width, height, radius?, outline?` | No (`index: 0`) | Additive spotlight: dims outside regions with `rgba(0,0,0,0.68)`, punches out all highlight rects cleanly |
+| `blur` | `x, y, width, height, radius?, outline?` | No (`index: 0`) | Destructive Gaussian blur baked into exported pixels for redaction |
 | `text` | `at, text, fontSize?, align?` | No (`index: 0`) | High-contrast pill label; `at` is top edge (`left`/`center`/`right` aligned) |
+
+`highlight` and `blur` change the image itself and draw no outline in the export, so a redaction or spotlight doesn't draw attention to itself. Set `"outline": true` on one to stroke its edge in the annotation color.
 
 ### Colors
 - **Presets**: `"red"` (`#EF4444`), `"amber"` (`#F59E0B`), `"green"` (`#10B981`), `"cyan"` (`#06B6D4`), `"purple"` (`#8B5CF6`).
