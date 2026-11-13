@@ -72,14 +72,12 @@ export default defineConfig({
     ],
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html'],
+      reporter: ['text', 'json', 'json-summary', 'html'],
       exclude: ['node_modules/', 'tests/setup.ts', 'tests/e2e/test-runner.ts', 'tests/e2e/tier*', 'tests/e2e/r1-r5-tier*'],
       include: ['src/spec/**', 'src/core/node/**', 'cli/**'],
       thresholds: {
-        lines: 70,
-        functions: 70,
-        branches: 60,
-        statements: 70,
+        'src/spec/**': { lines: 90, functions: 90, branches: 80, statements: 90 },
+        'src/core/node/**': { lines: 70, functions: 70, branches: 70, statements: 70 },
       },
     },
   },
