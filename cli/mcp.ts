@@ -7,7 +7,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
-import { version } from '../../package.json' assert { type: 'json' };
+import { version } from '../package.json' with { type: 'json' };
 import { MarkdownExportFormat } from '../src/export/markdownSerializer';
 import { encodeSpecHash } from '../src/bridge/agentSession';
 import {
