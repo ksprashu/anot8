@@ -50,6 +50,21 @@ jobs:
       - name: Run Vitest test suites
         run: npm test
 
+      - name: Run Vitest with coverage
+        run: npm run test:coverage -- --maxWorkers=2
+
+      - name: Add coverage summary
+        if: always()
+        shell: bash
+        run: |
+          echo "## Coverage (Node ${{ matrix.node-version }})" >> "$GITHUB_STEP_SUMMARY"
+          if [ -f coverage/coverage-summary.json ]; then
+            node -e 'const c=require("./coverage/coverage-summary.json").total; for (const k of ["lines","statements","functions","branches"]) console.log(`- ${k}: ${c[k].pct}%`)' >> "$GITHUB_STEP_SUMMARY"
+            echo "CLI tests run in child processes; CLI coverage is not captured by this report." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Coverage report was not generated." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
   package:
     name: Build & Publish CLI
     needs: validate
