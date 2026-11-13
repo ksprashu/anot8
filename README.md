@@ -164,12 +164,10 @@ The reducer, geometry math, markdown serializer, and Canvas2D exporter form a **
 | Category | Action | Mac Shortcut | Windows / Linux Shortcut | Description |
 |---|---|---|---|---|
 | **Tools** | Select & Transform | <kbd>V</kbd> | <kbd>V</kbd> | Select, move, and resize annotations on canvas |
-| **Tools** | Bounding Box | <kbd>R</kbd> | <kbd>R</kbd> | Draw rectangular bounding box with stroke & fill |
+| **Tools** | Bounding Box | <kbd>B</kbd> or <kbd>R</kbd> | <kbd>B</kbd> or <kbd>R</kbd> | Draw rectangular bounding box with stroke & fill |
 | **Tools** | Ellipse / Circle | <kbd>C</kbd> or <kbd>O</kbd> | <kbd>C</kbd> or <kbd>O</kbd> | Draw circular or oval vector annotation |
 | **Tools** | Directional Arrow | <kbd>A</kbd> | <kbd>A</kbd> | Draw vector pointer arrow with 30° wings |
 | **Tools** | Numbered Callout Pin | <kbd>P</kbd> | <kbd>P</kbd> | Place auto-incrementing sequential pinpoint badge |
-| **Tools** | Highlight | <kbd>L</kbd> | <kbd>L</kbd> | Dim everything outside the selected region to focus attention |
-| **Tools** | Blur / Redact | <kbd>B</kbd> | <kbd>B</kbd> | Apply irreversible Gaussian blur to selected annotation |
 | **Tools** | Pan Tool | <kbd>H</kbd> | <kbd>H</kbd> | Activate viewport hand/pan tool |
 | **Tools** | Quick Pan | <kbd>Space</kbd> + Drag | <kbd>Space</kbd> + Drag | Hold spacebar and drag anywhere to pan |
 | **Canvas** | Zoom In | <kbd>+</kbd> | <kbd>+</kbd> | Enlarge canvas view centered on viewport |
