@@ -259,7 +259,14 @@ export function appReducer(state: AppState, action: AppAction): AppState {
 
     case 'ADD_ANNOTATION': {
       const now = Date.now();
-      const newId = action.payload.id || generateUniqueId();
+      const existingIds = new Set(state.annotations.map((ann) => ann.id));
+      const requestedId = action.payload.id;
+      const baseId = requestedId && !existingIds.has(requestedId) ? requestedId : generateUniqueId();
+      let newId = baseId;
+      let suffix = 1;
+      while (existingIds.has(newId)) {
+        newId = `${baseId}_${suffix++}`;
+      }
       const normalizedGeo = normalizeGeometry(action.payload.geometry);
 
       const newAnnotation: Annotation = {

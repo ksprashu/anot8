@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   appReducer,
   createInitialState,
@@ -66,6 +66,28 @@ describe('appReducer & State Engine', () => {
 
   beforeEach(() => {
     initialState = createInitialState();
+  });
+
+  describe('ADD_ANNOTATION ID uniqueness', () => {
+    it('preserves a supplied unique ID and selects it', () => {
+      const next = appReducer(initialState, { type: 'ADD_ANNOTATION', payload: { id: 'one', geometry: sampleBox } });
+      expect(next.annotations[0].id).toBe('one');
+      expect(next.selectedAnnotationId).toBe('one');
+    });
+
+    it('does not duplicate IDs when a supplied ID and generated IDs collide', () => {
+      const spy = vi.spyOn(crypto, 'randomUUID').mockReturnValue('existing' as `${string}-${string}-${string}-${string}-${string}`);
+      try {
+        const state = appReducer(initialState, { type: 'ADD_ANNOTATION', payload: { id: 'existing', geometry: sampleBox } });
+        const next = appReducer(state, { type: 'ADD_ANNOTATION', payload: { id: 'existing', geometry: sampleBox } });
+        expect(new Set(next.annotations.map(a => a.id)).size).toBe(2);
+        expect(next.selectedAnnotationId).toBe(next.annotations[1].id);
+        const third = appReducer(next, { type: 'ADD_ANNOTATION', payload: { geometry: sampleBox } });
+        expect(new Set(third.annotations.map(a => a.id)).size).toBe(3);
+        expect(third.selectedAnnotationId).toBe(third.annotations[2].id);
+        expect(state.annotations).toHaveLength(1);
+      } finally { spy.mockRestore(); }
+    });
   });
 
   describe('Suite 1: Continuous 1..N Reindexing Invariant', () => {
