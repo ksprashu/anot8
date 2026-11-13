@@ -32,8 +32,11 @@ function run(args: string[], input?: string) {
 let tmp: string;
 
 beforeAll(() => {
-  execFileSync('npx', ['tsup', '--silent'], { cwd: ROOT, stdio: 'ignore' });
   tmp = mkdtempSync(path.join(tmpdir(), 'anot8-cli-'));
+  execFileSync(process.execPath, [path.join(ROOT, 'node_modules/tsup/dist/cli-default.js'), '--silent'], {
+    cwd: ROOT,
+    stdio: 'ignore',
+  });
 }, 60_000);
 
 afterAll(() => {
@@ -290,6 +293,40 @@ describe('anot8 MCP server', () => {
     const body = JSON.parse((result.content as Array<{ text: string }>)[0].text);
     expect(body.error).toBe('invalid_spec');
     expect(body.issues[0].path).toMatch(/^annotations\[0\]/);
+  });
+
+  it('rejects SVG data URLs before native decode and keeps the MCP server available', async () => {
+    const svg = Buffer.from(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="100000" height="100000"></svg>'
+    ).toString('base64');
+    for (const source of [`data:image/svg+xml;base64,${svg}`, `data:image/png;base64,${svg}`]) {
+      const result = await client.callTool({
+        name: 'anot8_validate',
+        arguments: {
+          spec: { version: 1, image: { source, width: 100_000, height: 100_000 }, annotations: [] },
+        },
+      });
+      expect(result.isError).toBe(true);
+      expect((result.content as Array<{ text: string }>)[0].text).toContain(
+        'SVG and XML images are not supported by the Node renderer'
+      );
+    }
+
+    const valid = await client.callTool({
+      name: 'anot8_validate',
+      arguments: {
+        spec: {
+          version: 1,
+          image: { source: path.join(FIXTURES, 'screen.png'), width: 800, height: 500 },
+          annotations: [],
+        },
+      },
+    });
+    expect(valid.isError).toBeFalsy();
+    expect(JSON.parse((valid.content as Array<{ text: string }>)[0].text)).toMatchObject({
+      valid: true,
+      image: { width: 800, height: 500 },
+    });
   });
 
   it('applies ops and writes the spec back', async () => {

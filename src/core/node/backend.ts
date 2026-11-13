@@ -13,6 +13,8 @@ import { createCanvas, loadImage, type Image } from '@napi-rs/canvas';
 import type { RenderBackend } from '../../export/canvasExporter';
 
 const DATA_URL_PATTERN = /^data:([^;,]*)(;base64)?,(.*)$/s;
+const SVG_DATA_URL_MEDIA_TYPE = 'image/svg+xml';
+const UNSUPPORTED_XML_IMAGE_MESSAGE = 'SVG and XML images are not supported by the Node renderer';
 
 /** Maximum image payload size (50 MB) to guard against memory exhaustion. */
 export const MAX_IMAGE_BYTES = 50 * 1024 * 1024;
@@ -266,7 +268,10 @@ export async function readImageSource(src: string, baseDir: string = process.cwd
     }
     const dataMatch = DATA_URL_PATTERN.exec(src);
     if (!dataMatch) throw new Error('Invalid data URL');
-    const [, , isBase64, payload] = dataMatch;
+    const [, mediaType, isBase64, payload] = dataMatch;
+    if (mediaType.toLowerCase() === SVG_DATA_URL_MEDIA_TYPE) {
+      throw new Error(UNSUPPORTED_XML_IMAGE_MESSAGE);
+    }
     const buf = isBase64 ? Buffer.from(payload, 'base64') : Buffer.from(decodeURIComponent(payload), 'utf8');
     if (buf.byteLength > MAX_IMAGE_BYTES) {
       throw new Error(`Data URL image exceeds maximum size of ${MAX_IMAGE_BYTES} bytes`);
@@ -291,9 +296,35 @@ export async function readImageSource(src: string, baseDir: string = process.cwd
   }
 }
 
+function hasXmlImagePrefix(buf: Buffer): boolean {
+  if (
+    (buf[0] === 0xff && buf[1] === 0xfe) ||
+    (buf[0] === 0xfe && buf[1] === 0xff) ||
+    (buf[0] === 0x00 && buf[1] === 0x00 && buf[2] === 0xfe && buf[3] === 0xff) ||
+    (buf[0] === 0xff && buf[1] === 0xfe && buf[2] === 0x00 && buf[3] === 0x00)
+  ) {
+    return true;
+  }
+
+  let offset = buf[0] === 0xef && buf[1] === 0xbb && buf[2] === 0xbf ? 3 : 0;
+  while (
+    buf[offset] === 0x09 ||
+    buf[offset] === 0x0a ||
+    buf[offset] === 0x0c ||
+    buf[offset] === 0x0d ||
+    buf[offset] === 0x20
+  ) {
+    offset++;
+  }
+  return buf[offset] === 0x3c || (buf[offset] === 0x00 && buf[offset + 1] === 0x3c);
+}
+
 export async function decodeImageBuffer(buf: Buffer): Promise<Image> {
   if (buf.byteLength > MAX_IMAGE_BYTES) {
     throw new Error(`Image buffer exceeds maximum size of ${MAX_IMAGE_BYTES} bytes`);
+  }
+  if (hasXmlImagePrefix(buf)) {
+    throw new Error(UNSUPPORTED_XML_IMAGE_MESSAGE);
   }
   const img = await loadImage(buf);
   assertCanvasDimensions(img.width, img.height);
