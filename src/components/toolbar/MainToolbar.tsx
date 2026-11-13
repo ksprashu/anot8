@@ -23,7 +23,7 @@ export interface ToolItem {
 
 export const TOOL_ITEMS: ToolItem[] = [
   { id: 'select', label: 'Select', shortcut: 'V', icon: MousePointer2, description: 'Select / Move tool' },
-  { id: 'box', label: 'Box', shortcut: 'R', icon: Square, description: 'Rectangle / Box tool' },
+  { id: 'box', label: 'Box', shortcut: 'B', icon: Square, description: 'Rectangle / Box tool' },
   { id: 'ellipse', label: 'Ellipse', shortcut: 'C', icon: Circle, description: 'Circle / Ellipse tool' },
   { id: 'arrow', label: 'Arrow', shortcut: 'A', icon: ArrowUpRight, description: 'Arrow pointer tool' },
   { id: 'pin', label: 'Pin', shortcut: 'P', icon: MapPin, description: 'Numbered callout pin tool' },
