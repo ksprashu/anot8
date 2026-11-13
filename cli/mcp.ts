@@ -7,7 +7,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
-import { version } from '../package.json' with { type: 'json' };
+import packageMetadata from '../package.json' with { type: 'json' };
 import { MarkdownExportFormat } from '../src/export/markdownSerializer';
 import { encodeSpecHash } from '../src/bridge/agentSession';
 import {
@@ -131,7 +131,7 @@ function tool<A>(handler: (args: A) => Promise<CallToolResult>) {
 }
 
 export function createMcpServer(): McpServer {
-  const server = new McpServer({ name: 'anot8', version }, { instructions: GUIDE });
+  const server = new McpServer({ name: 'anot8', version: packageMetadata.version }, { instructions: GUIDE });
 
   server.registerResource(
     'anot8-guide',
