@@ -292,7 +292,7 @@ export const SvgOverlay: React.FC<SvgOverlayProps> = ({ className = '' }) => {
 
       if (draft) {
         if (draft.type === 'box' || draft.type === 'highlight' || draft.type === 'blur') {
-          isValid = draft.width >= 4 || draft.height >= 4;
+          isValid = draft.width >= 4 && draft.height >= 4;
         } else if (draft.type === 'ellipse') {
           isValid = draft.rx >= 2 || draft.ry >= 2;
         } else if (draft.type === 'arrow') {
